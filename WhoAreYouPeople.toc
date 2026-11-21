@@ -3,7 +3,7 @@
 ## Notes: Finds out who's whispering you: level, class and guild on whispers, a player card, a whisper window, class and role icons in chat, spam flag and settings.
 ## Author: quake_x1
 ## IconTexture: Interface\AddOns\WhoAreYouPeople\icon
-## Version: 2.0.0
+## Version: 2.0.1
 ## SavedVariables: WhisperInfoDB
 
 WhoAreYouPeople.lua

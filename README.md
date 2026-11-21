@@ -11,7 +11,7 @@ The name comes from the SpongeBob *"Who are you people?"* meme, which is exactly
 - **Whispers window:** every whisper conversation in one window, with history and a reply box.
 - **Spam flag:** greys out or hides likely gold-seller whispers from strangers.
 - **Armory link:** one click gives you the player's Forever Armory page to copy into your browser.
-- **Settings with live preview:** every feature has its own on/off switch, in collapsible sections. Open them with `/wi config` or the question-mark minimap button.
+- **Settings with live preview:** every feature has its own on/off switch, in collapsible sections. Open them with `/wi config` or the minimap button.
 - **Memory:** everything it learns is saved, so people who whisper you again show their full tag straight away.
 
 ## Installing
@@ -137,7 +137,7 @@ If a real player gets flagged, click **[not spam]** on their whisper or type `/w
 
 ## Minimap button
 
-The green question-mark button on the edge of your minimap gives quick access to the addon.
+The Who Are You People? button on the edge of your minimap gives quick access to the addon.
 
 - **Left-click:** open the settings.
 - **Right-click:** open the player card for whoever whispered you last.
@@ -197,6 +197,7 @@ Newest changes first.
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.0.1 | Nov 21, 2026 | Minimap button shows the addon icon instead of the green question mark. |
 | 2.0.0 | Nov 21, 2026 | Renamed from WhisperInfo to Who Are You People?. New folder name `WhoAreYouPeople` and new slash command `/wayp` (`/wi` still works). Addon icon in the AddOns list. |
 | 1.7.1 | Nov 21, 2026 | Minimap button is now a green question mark, centred in the ring. |
 | 1.7.0 | Nov 21, 2026 | New **Whispers window**: conversation list, saved history, reply box, Card and Invite buttons. New *Whisper window* settings section. |
