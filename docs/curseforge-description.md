@@ -2,7 +2,7 @@
 
 **Know who's whispering you before you invite them.**
 
-Who Are You People? puts the sender's level, class and guild in front of every whisper, so you can fill dungeon groups without guessing. Click a name for a full player card, keep every conversation in one window, and let the addon grey out gold-seller spam. All of it is set up in a settings page with a live preview.
+Who Are You People? puts the sender's level, class and guild in front of every whisper, so you can fill dungeon groups without guessing. Click a name for a full player card, keep every conversation in one window, and let the addon grey out gold-seller spam. All of it is set up in a settings window with a live preview.
 
 ---
 
@@ -32,12 +32,12 @@ Click [who] or type `/wi Name` to see everything the game can tell you about a p
 The card has buttons to **Whisper**, **Invite**, **Armory**, **Look up again** and **Set role**.
 
 ### Whispers window
-Every whisper conversation in one window, saved between sessions.
+Every whisper conversation in one window, saved between sessions, Battle.net whispers included.
 
 - A conversation list with class icons, class-coloured names and unread counts
 - Time-stamped messages with clickable item links, and up to 150 messages of history per person
 - A header showing their level, class, guild and zone, with Card and Invite buttons
-- A reply box: type and press Enter to whisper back
+- A reply box: type and press Enter to whisper back (as a Battle.net whisper for Battle.net friends)
 - Optional: pop the window open on new whispers, or take whispers out of normal chat entirely
 
 ### Class and role icons
@@ -55,12 +55,12 @@ Whispers from strangers that look like gold sellers are greyed out with a **[lik
 Pick the look that matches the rest of your UI. There are four UI styles matching EllesmereUI's: **WoW Forever** (the game's own Forever windows, the default), **EllesmereUI** (flat and dark), **Classic WoW UI** (the original vanilla frames and buttons) and **Blizzard (Retail)**. On the Forever client, Blizzard (Retail) still draws Forever's frame art for now. Changing the style reloads the UI, just like EllesmereUI. EllesmereUI doesn't need to be installed, but the flat style uses its font when it is.
 
 ### Settings with live preview
-Every feature has its own on/off switch, grouped into collapsible sections. Sample chat lines at the top redraw as you change settings, so you see exactly what changes. Main switches turn a whole feature off while keeping your sub-settings, and a **Restore defaults** button puts everything back.
+Settings have their own window, in your UI style. Every feature has its own on/off switch, grouped into collapsible sections. Sample chat lines at the top redraw as you change settings, so you see exactly what changes. Main switches turn a whole feature off while keeping your sub-settings, and a **Restore defaults** button puts everything back.
 
 ### Minimap button
-- **Left-click:** settings
+- **Left-click:** Whispers window
+- **Shift-click or middle-click:** settings
 - **Right-click:** player card for whoever whispered you last
-- **Shift-click or middle-click:** Whispers window
 - **Drag:** move it around the minimap
 
 ---
@@ -72,7 +72,7 @@ All commands start with `/wi` (or `/wayp`). Names can be typed in lowercase.
 | Command | What it does |
 |---|---|
 | `/wi` | Shows the list of commands |
-| `/wi config` | Opens the settings |
+| `/wi config` | Opens the settings window |
 | `/wi Name` | Opens the player card and looks them up |
 | `/wi whispers` (`/wi w`) | Opens or closes the Whispers window |
 | `/wi list` | The last 10 people who whispered you |
