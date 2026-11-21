@@ -16,7 +16,9 @@ local Print = ns.Print
 -- A Blizzard-style window just for whispers: people on the left, the
 -- conversation and a reply box on the right. History is saved between sessions.
 local messenger, selectedConvo
-local MAX_LIST, MAX_HISTORY = 14, 150
+local MAX_LIST, MAX_HISTORY = 40, 150     -- list rows made; only those that fit are shown
+local MIN_W, MIN_H, MAX_W, MAX_H = 480, 260, 1200, 900
+local DEFAULT_W, DEFAULT_H = 600, 400
 
 -- Battle.net conversations are saved under "BN:" plus the BattleTag, which
 -- stays the same between sessions (the account ID does not).
@@ -74,7 +76,7 @@ local function RefreshMessenger()
     selectedConvo = list[1] and list[1].full or nil
   end
   for i, btn in ipairs(messenger.buttons) do
-    local item = list[i]
+    local item = i <= messenger.visibleRows and list[i]
     if item then
       local e = ns.DB.players[item.full] or {}
       local icon = IsBN(item.full) and BN_ICON or (e.classFile and (ClassIcon(e.classFile, 14) or "") or "")
@@ -124,7 +126,10 @@ local function RefreshMessenger()
 end
 
 local function BuildMessenger()
-  local m = ns.UI.Window("WhoAreYouPeopleMessenger", 600, 400, "Whispers", "HIGH")
+  local size = ns.DB.messengerSize or {}
+  local w = math.max(MIN_W, math.min(MAX_W, size[1] or DEFAULT_W))
+  local h = math.max(MIN_H, math.min(MAX_H, size[2] or DEFAULT_H))
+  local m = ns.UI.Window("WhoAreYouPeopleMessenger", w, h, "Whispers", "HIGH")
   messenger = m
   if ns.DB.messengerPos then
     local p = ns.DB.messengerPos
@@ -132,10 +137,23 @@ local function BuildMessenger()
   else
     m:SetPoint("CENTER", UIParent, "CENTER", -120, 60)
   end
+  local function SavePlace()
+    ns.DB.messengerPos = { m:GetPoint(1) }
+    ns.DB.messengerPos[2] = nil
+    ns.DB.messengerSize = { math.floor(m:GetWidth() + 0.5), math.floor(m:GetHeight() + 0.5) }
+  end
   m:SetScript("OnDragStop", function(self)
     self:StopMovingOrSizing()
-    ns.DB.messengerPos = { self:GetPoint(1) }
-    ns.DB.messengerPos[2] = nil
+    SavePlace()
+  end)
+  -- sizing can re-anchor the window, so its position is saved with its size
+  ns.UI.ResizeGrip(m, MIN_W, MIN_H, MAX_W, MAX_H, SavePlace)
+  -- as many conversation rows as fit under the title bar
+  local function RowsThatFit() return math.max(1, math.floor((m:GetHeight() - 30 - 12) / 24)) end
+  m.visibleRows = RowsThatFit()
+  m:SetScript("OnSizeChanged", function()
+    m.visibleRows = RowsThatFit()
+    RefreshMessenger()
   end)
 
   -- left: conversations, on a darker sidebar

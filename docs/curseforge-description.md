@@ -32,7 +32,7 @@ Click [who] or type `/wi Name` to see everything the game can tell you about a p
 The card has buttons to **Whisper**, **Invite**, **Armory**, **Look up again** and **Set role**.
 
 ### Whispers window
-Every whisper conversation in one window, saved between sessions, Battle.net whispers included.
+Every whisper conversation in one window, saved between sessions, Battle.net whispers included. Move it and resize it from the corner; it remembers both.
 
 - A conversation list with class icons, class-coloured names and unread counts
 - Time-stamped messages with clickable item links, and up to 150 messages of history per person

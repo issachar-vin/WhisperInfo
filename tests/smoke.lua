@@ -235,7 +235,8 @@ end
 print("== every window shown, every handler fired (" .. #objects .. " frames)")
 for _, theme in ipairs({ "Who Are You People?", "Horde", "Faction (Auto)", "Class Colored", "Midnight" }) do
   WhisperInfoDB.options.theme = theme
-  for _, ev in ipairs({ "OnShow", "OnEnter", "OnLeave", "OnEditFocusGained", "OnEditFocusLost", "OnEnable", "OnDisable" }) do
+  for _, ev in ipairs({ "OnShow", "OnEnter", "OnLeave", "OnEditFocusGained", "OnEditFocusLost", "OnEnable", "OnDisable",
+                       "OnMouseDown", "OnMouseUp", "OnSizeChanged" }) do
     FireAll(ev)
   end
   FireAll("OnClick", "LeftButton")
@@ -245,6 +246,13 @@ for _, theme in ipairs({ "Who Are You People?", "Horde", "Faction (Auto)", "Clas
   FireAll("OnTextChanged", true)
   FireAll("OnEnterPressed")
   FireAll("OnEscapePressed")
+end
+
+-- dragging the Whispers window's corner grip saves its size and position
+local size = WhisperInfoDB and WhisperInfoDB.messengerSize
+if not (size and size[1] == NUMERIC.GetWidth and size[2] == NUMERIC.GetHeight and WhisperInfoDB.messengerPos) then
+  failures = failures + 1
+  print("FAIL resizing the Whispers window did not save its size and position")
 end
 
 print(failures == 0 and "== PASS: no Lua errors" or ("== " .. failures .. " FAILURES"))

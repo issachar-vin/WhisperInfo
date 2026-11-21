@@ -76,7 +76,7 @@ Click `[who]` on any whisper, or type `/wi Name`, to open a window with everythi
 
 ## Whispers window
 
-The Whispers window keeps every whisper conversation in one window, saved between sessions, including Battle.net whispers. Open it by left-clicking the minimap button, or with `/wi whispers` (short: `/wi w`). Opening the settings leaves it open.
+The Whispers window keeps every whisper conversation in one window, saved between sessions, including Battle.net whispers. Open it by left-clicking the minimap button, or with `/wi whispers` (short: `/wi w`). Opening the settings leaves it open. Drag the title bar to move it, or the bottom-right corner to resize it; it remembers both.
 
 - **Conversation list (left):** everyone you've whispered with, newest first, with class icon (or a Battle.net icon), class-coloured name and an unread count. Click a name to open the conversation. Right-click it to remove that conversation.
 - **Conversation (right):** time-stamped messages from both sides. Item links stay clickable, and the mouse wheel scrolls back through up to 150 messages per person.
@@ -219,6 +219,7 @@ Newest changes first.
 
 | Version | Date | Changes |
 |---|---|---|
+| 3.2.0 | Nov 21, 2026 | The Whispers window can be resized from its bottom-right corner and remembers its size. The conversation list shows as many people as fit. |
 | 3.1.0 | Nov 21, 2026 | Settings open in their own window, drawn in your UI style, and no longer close the Whispers window; the game's AddOns options page has an **Open settings** button. Battle.net whispers are kept in the Whispers window, and replies there go out as Battle.net whispers. Minimap button: left-click now opens the Whispers window, shift-click the settings. The code is split into one file per feature. |
 | 3.0.0 | Nov 21, 2026 | UI styles replace the colour themes: WoW Forever (default, the look from before 2.2.0), EllesmereUI (flat), Classic WoW UI and Blizzard (Retail). Changing the style reloads the UI. |
 | 2.2.0 | Nov 21, 2026 | New EllesmereUI-style look for every window: flat dark panels, thin borders, on/off switches in settings, and a new Armory copy box. Each theme has its own background tint. The theme picker is now a dropdown. Uses EllesmereUI's font when it is installed. |
