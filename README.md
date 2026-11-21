@@ -6,6 +6,7 @@ A WoW Forever addon that tells you who is whispering you before you invite them.
 - **Player card:** click `[who]` to open a window with everything the game can tell you about that player, plus Whisper, Invite and Armory buttons.
 - **Class icons:** a class icon in front of messages, switchable per chat type (whispers, say, guild, party/raid, channels).
 - **Role icons:** a tank, healer or DPS icon in party and raid chat.
+- **Whispers window:** every whisper conversation in one window, with history and a reply box.
 - **Spam flag:** greys out or hides likely gold-seller whispers from strangers.
 - **Armory link:** one click gives you the player's Forever Armory page to copy into your browser.
 - **Settings with live preview:** every feature has its own on/off switch, in collapsible sections. Open them with `/wi config` or the question-mark minimap button.
@@ -68,6 +69,26 @@ Click `[who]` on any whisper, or type `/wi Name`, to open a window with everythi
 - **Look up again** refreshes the card. The game needs about 5 seconds between lookups.
 - **Set role** steps through Tank, Healer, DPS and none. The role then shows in party chat.
 
+## Whispers window
+
+The Whispers window keeps every whisper conversation in one Blizzard-style window, saved between sessions. Open it by shift-clicking (or middle-clicking) the minimap button, or with `/wi whispers` (short: `/wi w`).
+
+- **Conversation list (left):** everyone you've whispered with, newest first, with class icon, class-coloured name and a gold unread count. Click a name to open the conversation. Right-click it to remove that conversation.
+- **Conversation (right):** time-stamped messages from both sides. Item links stay clickable, and the mouse wheel scrolls back through up to 150 messages per person.
+- **Header:** their level, class, guild and zone, with **Card** (opens the player card) and **Invite** buttons.
+- **Reply box:** type at the bottom and press Enter to whisper back.
+- **Spam:** whispers flagged as spam are left out of the window.
+
+Three switches in the *Whisper window* settings section control it:
+
+| Switch | Default | What it does |
+|---|---|---|
+| Keep whispers in the WhisperInfo window | On | Main switch. Off = no window and no saved history. |
+| Open the window when someone whispers you | Off | Pops the window open on a new whisper. |
+| Take whispers out of the normal chat window | Off | Whispers, yours and theirs, only appear in the Whispers window. |
+
+Battle.net whispers still appear only in normal chat.
+
 ## Settings
 
 Every feature has its own on/off switch. Open the settings with `/wi config`, a left-click on the minimap button, or Game Menu → Options → AddOns → WhisperInfo. Changes apply straight away.
@@ -85,6 +106,7 @@ Every feature has its own on/off switch. Open the settings with `/wi config`, a 
 | Role icons | Icons on/off · Party chat · Raid chat |
 | Spam | Flag on/off · Strangers at level 1–5 · Links, prices and gold-selling words · Hide instead of grey out |
 | Other | Minimap button |
+| Whisper window | Window on/off · Open on a new whisper · Take whispers out of normal chat |
 
 ## Chat icons
 
@@ -111,9 +133,12 @@ If a real player gets flagged, click **[not spam]** on their whisper or type `/w
 
 ## Minimap button
 
+The green question-mark button on the edge of your minimap gives quick access to the addon.
+
 - **Left-click:** open the settings.
 - **Right-click:** open the player card for whoever whispered you last.
 - **Drag:** move it around the minimap. It remembers where you put it.
+- **Shift-click or middle-click:** open or close the Whispers window.
 
 Hide it with the *Minimap button* switch in settings or `/wi minimap`.
 
@@ -134,6 +159,7 @@ All commands start with `/wi` (or `/whisperinfo`). Names can be typed in lowerca
 | `/wi icons` | Turns all class icons in chat on or off. |
 | `/wi minimap` | Shows or hides the minimap button. |
 | `/wi reset` | Forgets every saved player. |
+| `/wi whispers` | Opens or closes the Whispers window (short: `/wi w`). |
 
 ## Limits
 
@@ -160,3 +186,20 @@ Forever runs mega-servers with rulesets (PvP, RP PvP, PvE, RP) and no realm name
 Keep a copy of a working `WhisperInfo` folder outside the game folder, so you can go back to it if an update causes trouble.
 
 **Found a bug or have an idea?** Open an issue or contact quake_x1. Include the error text, your `WhisperInfo.lua` file, and what you were doing when it happened.
+
+## Changelog
+
+Newest changes first.
+
+| Version | Date | Changes |
+|---|---|---|
+| 1.7.1 | Nov 21, 2026 | Minimap button is now a green question mark, centred in the ring. |
+| 1.7.0 | Nov 21, 2026 | New **Whispers window**: conversation list, saved history, reply box, Card and Invite buttons. New *Whisper window* settings section. |
+| 1.6.0 | Nov 21, 2026 | `[who]` and `[armory]` can show as icons. Minimap button became a question mark. Settings sections now open and close (+ / −). |
+| 1.5.0 | Nov 21, 2026 | Every feature got its own on/off switch, grouped into sections with main switches. Restore defaults button. |
+| 1.4.1 | Nov 21, 2026 | Live preview of chat in the settings page. |
+| 1.4.0 | Nov 21, 2026 | Spam flag for gold-seller whispers, with **[not spam]**. Minimap button for settings. |
+| 1.3.2 | Nov 20, 2026 | Fixed a stray dash after every name (Forever has no realm names). |
+| 1.3.1 | Nov 20, 2026 | Battle.net friends' names fixed; clearer guild-rank text on the card. |
+| 1.3.0 | Nov 20, 2026 | Settings panel and the player card behind `[who]`. |
+| 1.0–1.2 | Nov 14–20, 2026 | First versions: whisper tag with level, class and guild; `[armory]` link; automatic lookups; class icons in chat; role icons in party chat. |
