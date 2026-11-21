@@ -12,6 +12,7 @@ The name comes from the SpongeBob *"Who are you people?"* meme, which is exactly
 - **Spam flag:** greys out or hides likely gold-seller whispers from strangers.
 - **Armory link:** one click gives you the player's Forever Armory page to copy into your browser.
 - **Settings with live preview:** every feature has its own on/off switch, in collapsible sections. Open them with `/wi config` or the minimap button.
+- **Themes:** pick an accent colour matching EllesmereUI's themes, including Horde, Alliance, Midnight and Class Colored.
 - **Memory:** everything it learns is saved, so people who whisper you again show their full tag straight away.
 
 ## Installing
@@ -101,6 +102,7 @@ Every feature has its own on/off switch. Open the settings with `/wi config`, a 
 - **Sections:** click a section header's **+** / **−** to open or close it. Closed headers show a count such as *5 of 9 on*. The page remembers which sections you leave open.
 - **Main switches:** the first switch in a section turns that whole feature off. The indented switches under it grey out but keep their state, so turning the main switch back on restores your setup.
 - **Buttons:** **Restore defaults** puts every switch back, and **Forget all saved players** clears the addon's memory.
+- **Theme:** the button at the top right picks the accent colour used for the addon name in chat, window titles, section headers and the selected conversation. Left-click for the next theme, right-click for the previous one. The themes match EllesmereUI's: Who Are You People? (green, the default), EllesmereUI, EllesmereUI Forever, Horde, Alliance, Faction (Auto), Midnight, Dark and Class Colored.
 
 | Section | Switches |
 |---|---|
@@ -197,6 +199,7 @@ Newest changes first.
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.1.0 | Nov 21, 2026 | Themes: pick an accent colour matching EllesmereUI's themes from the top of the settings page. |
 | 2.0.1 | Nov 21, 2026 | Minimap button shows the addon icon instead of the green question mark. |
 | 2.0.0 | Nov 21, 2026 | Renamed from WhisperInfo to Who Are You People?. New folder name `WhoAreYouPeople` and new slash command `/wayp` (`/wi` still works). Addon icon in the AddOns list. |
 | 1.7.1 | Nov 21, 2026 | Minimap button is now a green question mark, centred in the ring. |

@@ -51,6 +51,9 @@ Whispers from strangers that look like gold sellers are greyed out with a **[lik
 - Never flags friends, Battle.net friends, guildmates or group members
 - Click **[not spam]** to clear a real player for good
 
+### Themes
+Pick an accent colour that matches EllesmereUI's themes: EllesmereUI, EllesmereUI Forever, Horde, Alliance, Faction (Auto), Midnight, Dark or Class Colored. It colours the addon name in chat, window titles, section headers and the selected conversation, and changes straight away. EllesmereUI doesn't need to be installed.
+
 ### Settings with live preview
 Every feature has its own on/off switch, grouped into collapsible sections. Sample chat lines at the top redraw as you tick boxes, so you see exactly what changes. Main switches turn a whole feature off while keeping your sub-settings, and a **Restore defaults** button puts everything back.
 

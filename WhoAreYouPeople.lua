@@ -53,6 +53,8 @@ local DEFAULTS = {
   whisperWindow   = true,  -- keep whispers in the WhoAreYouPeople window
   whisperAutoOpen = false, -- open the window when someone whispers you
   whisperHideChat = false, -- take whispers out of the normal chat window
+  -- look
+  theme           = "Who Are You People?",
 }
 local PARENT = {
   tagLevel = "whisperTag", tagLevelColor = "tagLevel", tagClass = "whisperTag", tagGuild = "whisperTag",
@@ -72,8 +74,67 @@ end
 local SPAM_MAX_LEVEL = 5
 local lastWhisperer       -- for the minimap button's right-click
 
+---------------------------------------------------------------- themes
+-- Accent colours matching EllesmereUI's themes. A nil colour is worked out
+-- from the player (faction or class) when it is used.
+local THEMES = {
+  { name = "Who Are You People?", r = 0.25, g = 1,     b = 0.25 },
+  { name = "EllesmereUI",         r = 12/255,  g = 210/255, b = 157/255 },
+  { name = "EllesmereUI Forever", r = 220/255, g = 167/255, b = 127/255 },
+  { name = "Horde",               r = 1,       g = 90/255,  b = 31/255 },
+  { name = "Alliance",            r = 63/255,  g = 167/255, b = 1 },
+  { name = "Faction (Auto)" },
+  { name = "Midnight",            r = 120/255, g = 65/255,  b = 200/255 },
+  { name = "Dark",                r = 1,       g = 1,       b = 1 },
+  { name = "Class Colored" },
+}
+local THEME_BY_NAME = {}
+for i, t in ipairs(THEMES) do t.index = i; THEME_BY_NAME[t.name] = t end
+
+local function CurrentTheme()
+  return THEME_BY_NAME[OPT and OPT.theme] or THEMES[1]
+end
+
+local function Accent()
+  local t = CurrentTheme()
+  if t.name == "Faction (Auto)" then
+    t = THEME_BY_NAME[UnitFactionGroup("player") == "Horde" and "Horde" or "Alliance"]
+  elseif t.name == "Class Colored" then
+    local c = RAID_CLASS_COLORS and RAID_CLASS_COLORS[select(2, UnitClass("player"))]
+    if c then return c.r, c.g, c.b end
+    t = THEMES[1]
+  end
+  return t.r, t.g, t.b
+end
+
+local function AccentHex()
+  local r, g, b = Accent()
+  return string.format("|cff%02x%02x%02x", math.floor(r * 255 + 0.5), math.floor(g * 255 + 0.5), math.floor(b * 255 + 0.5))
+end
+
+-- Everything drawn in the accent colour, repainted when the theme changes.
+local accentTargets = {}
+local function PaintAccent(target)
+  local r, g, b = Accent()
+  if target.kind == "text" then
+    target.obj:SetTextColor(r, g, b)
+  elseif target.kind == "solid" then
+    target.obj:SetColorTexture(r, g, b, target.a or 1)
+  else
+    target.obj:SetVertexColor(r, g, b, target.a or 1)
+  end
+end
+local function UseAccent(obj, kind, a)
+  local target = { obj = obj, kind = kind, a = a }
+  accentTargets[#accentTargets + 1] = target
+  PaintAccent(target)
+end
+local function ApplyTheme()
+  for _, target in ipairs(accentTargets) do PaintAccent(target) end
+end
+
 local function Print(msg)
-  DEFAULT_CHAT_FRAME:AddMessage("|cff40ff40Who Are You People?|r " .. msg)
+  DEFAULT_CHAT_FRAME:AddMessage(AccentHex() .. "Who Are You People?|r " .. msg)
 end
 
 -- Whispers during some instance encounters arrive as secret values.
@@ -651,6 +712,7 @@ local function BuildCard()
     title:SetPoint("TOP", 0, -5)
   end
   title:SetText("Who Are You People?")
+  UseAccent(title, "text")
 
   card.icon = card:CreateTexture(nil, "ARTWORK")
   card.icon:SetSize(44, 44)
@@ -805,7 +867,7 @@ local function PreviewLines()
 
   -- 2) the lookup result
   if OPT.printLookups then
-    lines[#lines + 1] = "|cff40ff40Who Are You People?|r Addled Ark is " .. Describe(sample) .. GRAY .. " in Westfall|r" ..
+    lines[#lines + 1] = AccentHex() .. "Who Are You People?|r Addled Ark is " .. Describe(sample) .. GRAY .. " in Westfall|r" ..
       GRAY .. (OPT.autoWho and "   (after your next click)|r" or "   (after you click [who])|r")
   else
     lines[#lines + 1] = GRAY .. "(lookup results fill in the tag and card, no chat line)|r"
@@ -900,9 +962,36 @@ local function BuildSettings()
   local title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
   title:SetPoint("TOPLEFT", 16, -16)
   title:SetText("Who Are You People?")
+  UseAccent(title, "text")
   local sub = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
   sub:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -6)
   sub:SetText("Every feature has its own switch. Changes apply straight away.")
+
+  -- theme picker: left-click for the next theme, right-click for the previous one
+  local themeBtn = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
+  themeBtn:SetSize(190, 24)
+  themeBtn:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -24, -16)
+  themeBtn:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+  local themeLabel = panel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+  themeLabel:SetPoint("RIGHT", themeBtn, "LEFT", -8, 0)
+  themeLabel:SetText("Theme")
+  local function ShowTheme()
+    themeBtn:SetText(AccentHex() .. CurrentTheme().name .. "|r")
+  end
+  themeBtn:SetScript("OnClick", function(_, button)
+    local step = button == "RightButton" and -1 or 1
+    OPT.theme = THEMES[(CurrentTheme().index - 1 + step) % #THEMES + 1].name
+    ApplyTheme()
+    panel.UpdatePreview()
+  end)
+  themeBtn:SetScript("OnEnter", function(self)
+    GameTooltip:SetOwner(self, "ANCHOR_BOTTOMRIGHT")
+    GameTooltip:AddLine("Theme")
+    GameTooltip:AddLine("Accent colours matching EllesmereUI's themes.", 1, 1, 1, true)
+    GameTooltip:AddLine("Left-click: next theme   Right-click: previous", 0.7, 0.7, 0.7)
+    GameTooltip:Show()
+  end)
+  themeBtn:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
   -- preview, fixed at the top so it stays in view while you scroll the switches
   local head = panel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
@@ -953,6 +1042,7 @@ local function BuildSettings()
       if enabled then cb:Enable() else cb:Disable() end
       cb.label:SetTextColor(enabled and 1 or 0.5, enabled and 1 or 0.5, enabled and 1 or 0.5)
     end
+    ShowTheme()
     local lines = PreviewLines()
     for i, fs in ipairs(box.lines) do fs:SetText(lines[i] or "") end
     if panel.Layout then panel.Layout() end
@@ -972,6 +1062,7 @@ local function BuildSettings()
     hb.title = hb:CreateFontString(nil, "ARTWORK", "GameFontNormal")
     hb.title:SetPoint("LEFT", hb.icon, "RIGHT", 6, 0)
     hb.title:SetText(section.title)
+    UseAccent(hb.title, "text")
     hb.count = hb:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
     hb.count:SetPoint("LEFT", hb.title, "RIGHT", 8, 0)
     hb:SetHighlightTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight", "ADD")
@@ -1009,6 +1100,7 @@ local function BuildSettings()
   defaults:SetText("Restore defaults")
   defaults:SetScript("OnClick", function()
     for k, v in pairs(DEFAULTS) do OPT[k] = v end
+    ApplyTheme()
     if UpdateMinimapButton then UpdateMinimapButton() end
     Refresh()
   end)
@@ -1241,10 +1333,11 @@ local function BuildMessenger()
     title:SetPoint("TOP", 0, -5)
   end
   title:SetText("Whispers")
+  UseAccent(title, "text")
 
   -- left: conversations
   local divider = m:CreateTexture(nil, "ARTWORK")
-  divider:SetColorTexture(0.6, 0.5, 0.3, 0.5)
+  UseAccent(divider, "solid", 0.5)
   divider:SetSize(1, 352)
   divider:SetPoint("TOPLEFT", 182, -32)
 
@@ -1258,7 +1351,7 @@ local function BuildMessenger()
     b.sel = b:CreateTexture(nil, "BACKGROUND")
     b.sel:SetAllPoints()
     b.sel:SetTexture("Interface\\QuestFrame\\UI-QuestLogTitleHighlight")
-    b.sel:SetVertexColor(1, 0.82, 0, 0.45)
+    UseAccent(b.sel, "vertex", 0.45)
     b.sel:Hide()
     b.name = b:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     b.name:SetPoint("LEFT", 4, 0)
@@ -1452,6 +1545,7 @@ f:SetScript("OnEvent", function(_, event, arg1, arg2)
 
   elseif event == "PLAYER_LOGIN" then
     if IsInGuild() and C_GuildInfo and C_GuildInfo.GuildRoster then C_GuildInfo.GuildRoster() end
+    ApplyTheme()   -- faction and class are only certain once the player is in the world
 
   elseif event == "WHO_LIST_UPDATE" then
     for i = 1, C_FriendList.GetNumWhoResults() do
