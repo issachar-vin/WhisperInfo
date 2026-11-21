@@ -129,7 +129,8 @@ local function BuildMessenger()
   local size = ns.DB.messengerSize or {}
   local w = math.max(MIN_W, math.min(MAX_W, size[1] or DEFAULT_W))
   local h = math.max(MIN_H, math.min(MAX_H, size[2] or DEFAULT_H))
-  local m = ns.UI.Window("WhoAreYouPeopleMessenger", w, h, "Whispers", "HIGH")
+  -- Esc leaves the Whispers window open; it closes with its X, the minimap button or /wi w
+  local m = ns.UI.Window("WhoAreYouPeopleMessenger", w, h, "Whispers", "HIGH", true)
   messenger = m
   if ns.DB.messengerPos then
     local p = ns.DB.messengerPos

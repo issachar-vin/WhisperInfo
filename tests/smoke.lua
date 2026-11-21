@@ -248,6 +248,14 @@ for _, theme in ipairs({ "Who Are You People?", "Horde", "Faction (Auto)", "Clas
   FireAll("OnEscapePressed")
 end
 
+-- Esc (the game's UISpecialFrames list) closes the settings, never the Whispers window
+local onEsc = {}
+for _, name in ipairs(UISpecialFrames) do onEsc[name] = true end
+if not onEsc.WhoAreYouPeopleSettings or onEsc.WhoAreYouPeopleMessenger then
+  failures = failures + 1
+  print("FAIL Esc should close the settings window and leave the Whispers window open")
+end
+
 -- dragging the Whispers window's corner grip saves its size and position
 local size = WhisperInfoDB and WhisperInfoDB.messengerSize
 if not (size and size[1] == NUMERIC.GetWidth and size[2] == NUMERIC.GetHeight and WhisperInfoDB.messengerPos) then
