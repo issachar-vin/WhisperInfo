@@ -9,10 +9,14 @@ LUAC    ?= luac
 
 release: test $(ZIP)
 
-# Syntax check, then load the addon in a fake WoW environment and fire every handler.
+STYLES  := forever eui classic blizzard
+
+# Syntax check, then load the addon in a fake WoW environment and fire every
+# handler, once with no saved settings and once per UI style.
 test:
 	$(LUAC) -p $(ADDON).lua
 	$(LUA) tests/smoke.lua $(ADDON).lua
+	@for style in $(STYLES); do $(LUA) tests/smoke.lua $(ADDON).lua $$style || exit 1; done
 
 # Stage under a folder named after the addon so the zip extracts to Interface\AddOns\WhoAreYouPeople\.
 $(ZIP): $(FILES)

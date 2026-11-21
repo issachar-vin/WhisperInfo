@@ -12,7 +12,7 @@ The name comes from the SpongeBob *"Who are you people?"* meme, which is exactly
 - **Spam flag:** greys out or hides likely gold-seller whispers from strangers.
 - **Armory link:** one click gives you the player's Forever Armory page to copy into your browser.
 - **Settings with live preview:** every feature has its own on/off switch, in collapsible sections. Open them with `/wi config` or the minimap button.
-- **EllesmereUI-style look:** flat dark windows with thin borders, in themes matching EllesmereUI's (Horde, Alliance, Midnight, Class Colored and more). Each theme has its own accent colour and background tint.
+- **UI styles:** four UI styles matching EllesmereUI's: **WoW Forever** (the game's own Forever windows, the default), **EllesmereUI** (flat and dark), **Classic WoW UI** (the original vanilla frames and buttons) and **Blizzard (Retail)**. On the Forever client, Blizzard (Retail) still draws Forever's frame art for now.
 - **Memory:** everything it learns is saved, so people who whisper you again show their full tag straight away.
 
 ## Installing
@@ -78,7 +78,7 @@ Click `[who]` on any whisper, or type `/wi Name`, to open a window with everythi
 
 The Whispers window keeps every whisper conversation in one window, saved between sessions. Open it by shift-clicking (or middle-clicking) the minimap button, or with `/wi whispers` (short: `/wi w`).
 
-- **Conversation list (left):** everyone you've whispered with, newest first, with class icon, class-coloured name and a gold unread count. Click a name to open the conversation. Right-click it to remove that conversation.
+- **Conversation list (left):** everyone you've whispered with, newest first, with class icon, class-coloured name and an unread count. Click a name to open the conversation. Right-click it to remove that conversation.
 - **Conversation (right):** time-stamped messages from both sides. Item links stay clickable, and the mouse wheel scrolls back through up to 150 messages per person.
 - **Header:** their level, class, guild and zone, with **Card** (opens the player card) and **Invite** buttons.
 - **Reply box:** type at the bottom and press Enter to whisper back.
@@ -98,11 +98,11 @@ Battle.net whispers still appear only in normal chat.
 
 Every feature has its own on/off switch. Open the settings with `/wi config`, a left-click on the minimap button, or Game Menu → Options → AddOns → Who Are You People?. Changes apply straight away.
 
-- **Preview:** sample chat lines at the top redraw every time you flip a switch, so you see the result before closing the window.
+- **Preview:** sample chat lines at the top redraw every time you change a setting, so you see the result before closing the window.
 - **Sections:** click a section header's **+** / **−** to open or close it. Closed headers show a count such as *5 of 9 on*. The page remembers which sections you leave open.
 - **Main switches:** the first switch in a section turns that whole feature off. The indented switches under it grey out but keep their state, so turning the main switch back on restores your setup.
 - **Buttons:** **Restore defaults** puts every switch back, and **Forget all saved players** clears the addon's memory.
-- **Theme:** the dropdown at the top right sets the look of every Who Are You People? window: the player card, the Whispers window, the Armory copy box and this settings page. Each theme has its own accent colour and background tint. The themes match EllesmereUI's: Who Are You People? (green, the default), EllesmereUI, EllesmereUI Forever, Horde, Alliance, Faction (Auto), Midnight, Dark and Class Colored.
+- **UI style:** the dropdown at the top right sets the look of every Who Are You People? window: the player card, the Whispers window, the Armory copy box and this settings page. Pick a style and the addon asks to reload the UI, which is when the new look takes effect. The styles match EllesmereUI's: WoW Forever (the default), EllesmereUI, Classic WoW UI and Blizzard (Retail). **Restore defaults** leaves the style alone.
 
 | Section | Switches |
 |---|---|
@@ -184,6 +184,7 @@ Forever runs mega-servers with rulesets (PvP, RP PvP, PvE, RP) and no realm name
 | Problem | Fix |
 |---|---|
 | Addon shows as out of date | Tick **Load out of date AddOns**. For a lasting fix, type `/dump (select(4, GetBuildInfo()))` in game, then put that number in the `## Interface:` line of `WhoAreYouPeople.toc` and `/reload`. |
+| Picked a new UI style but nothing changed | The style switches after a UI reload. Accept the reload prompt, or type `/reload`. |
 | No tag on whispers at all | Check Who Are You People? is ticked in the AddOns list and type `/reload`. |
 | `Lvl ?` never fills in | Click once in the game world (not a menu), or click `[who]`. If it still stays, they are probably on the other faction. |
 | Icons show as `[T]`, `[H]`, `[D]` or blank squares | The game is missing that icon image. The letters are the backup and still work. |
@@ -199,6 +200,7 @@ Newest changes first.
 
 | Version | Date | Changes |
 |---|---|---|
+| 3.0.0 | Nov 21, 2026 | UI styles replace the colour themes: WoW Forever (default, the look from before 2.2.0), EllesmereUI (flat), Classic WoW UI and Blizzard (Retail). Changing the style reloads the UI. |
 | 2.2.0 | Nov 21, 2026 | New EllesmereUI-style look for every window: flat dark panels, thin borders, on/off switches in settings, and a new Armory copy box. Each theme has its own background tint. The theme picker is now a dropdown. Uses EllesmereUI's font when it is installed. |
 | 2.1.0 | Nov 21, 2026 | Themes: pick an accent colour matching EllesmereUI's themes from the top of the settings page. |
 | 2.0.1 | Nov 21, 2026 | Minimap button shows the addon icon instead of the green question mark. |
