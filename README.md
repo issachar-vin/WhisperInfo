@@ -8,10 +8,10 @@ The name comes from the SpongeBob *"Who are you people?"* meme, which is exactly
 - **Player card:** click `[who]` to open a window with everything the game can tell you about that player, plus Whisper, Invite and Armory buttons.
 - **Class icons:** a class icon in front of messages, switchable per chat type (whispers, say, guild, party/raid, channels).
 - **Role icons:** a tank, healer or DPS icon in party and raid chat.
-- **Whispers window:** every whisper conversation in one window, with history and a reply box.
+- **Whispers window:** every whisper conversation in one window, Battle.net whispers included, with history and a reply box.
 - **Spam flag:** greys out or hides likely gold-seller whispers from strangers.
 - **Armory link:** one click gives you the player's Forever Armory page to copy into your browser.
-- **Settings with live preview:** every feature has its own on/off switch, in collapsible sections. Open them with `/wi config` or the minimap button.
+- **Settings with live preview:** every feature has its own on/off switch, in collapsible sections. They open in their own window with `/wi config` or a shift-click on the minimap button.
 - **UI styles:** four UI styles matching EllesmereUI's: **WoW Forever** (the game's own Forever windows, the default), **EllesmereUI** (flat and dark), **Classic WoW UI** (the original vanilla frames and buttons) and **Blizzard (Retail)**. On the Forever client, Blizzard (Retail) still draws Forever's frame art for now.
 - **Memory:** everything it learns is saved, so people who whisper you again show their full tag straight away.
 
@@ -76,12 +76,12 @@ Click `[who]` on any whisper, or type `/wi Name`, to open a window with everythi
 
 ## Whispers window
 
-The Whispers window keeps every whisper conversation in one window, saved between sessions. Open it by shift-clicking (or middle-clicking) the minimap button, or with `/wi whispers` (short: `/wi w`).
+The Whispers window keeps every whisper conversation in one window, saved between sessions, including Battle.net whispers. Open it by left-clicking the minimap button, or with `/wi whispers` (short: `/wi w`). Opening the settings leaves it open.
 
-- **Conversation list (left):** everyone you've whispered with, newest first, with class icon, class-coloured name and an unread count. Click a name to open the conversation. Right-click it to remove that conversation.
+- **Conversation list (left):** everyone you've whispered with, newest first, with class icon (or a Battle.net icon), class-coloured name and an unread count. Click a name to open the conversation. Right-click it to remove that conversation.
 - **Conversation (right):** time-stamped messages from both sides. Item links stay clickable, and the mouse wheel scrolls back through up to 150 messages per person.
-- **Header:** their level, class, guild and zone, with **Card** (opens the player card) and **Invite** buttons.
-- **Reply box:** type at the bottom and press Enter to whisper back.
+- **Header:** their level, class, guild and zone, with **Card** (opens the player card) and **Invite** buttons. For a Battle.net friend it shows what they're playing; Card and Invite appear while they're on a WoW Forever character.
+- **Reply box:** type at the bottom and press Enter to whisper back. Replies to Battle.net friends go out as Battle.net whispers.
 - **Spam:** whispers flagged as spam are left out of the window.
 
 Three switches in the *Whisper window* settings section control it:
@@ -92,17 +92,17 @@ Three switches in the *Whisper window* settings section control it:
 | Open the window when someone whispers you | Off | Pops the window open on a new whisper. |
 | Take whispers out of the normal chat window | Off | Whispers, yours and theirs, only appear in the Whispers window. |
 
-Battle.net whispers still appear only in normal chat.
+Battle.net conversations are saved by BattleTag, so they stay together between sessions.
 
 ## Settings
 
-Every feature has its own on/off switch. Open the settings with `/wi config`, a left-click on the minimap button, or Game Menu → Options → AddOns → Who Are You People?. Changes apply straight away.
+Every feature has its own on/off switch. The settings have their own window, drawn in your UI style. Open it with `/wi config`, a shift-click (or middle-click) on the minimap button, or the **Open settings** button under Game Menu → Options → AddOns → Who Are You People?. Opening it doesn't close the Whispers window. Changes apply straight away.
 
 - **Preview:** sample chat lines at the top redraw every time you change a setting, so you see the result before closing the window.
 - **Sections:** click a section header's **+** / **−** to open or close it. Closed headers show a count such as *5 of 9 on*. The page remembers which sections you leave open.
 - **Main switches:** the first switch in a section turns that whole feature off. The indented switches under it grey out but keep their state, so turning the main switch back on restores your setup.
 - **Buttons:** **Restore defaults** puts every switch back, and **Forget all saved players** clears the addon's memory.
-- **UI style:** the dropdown at the top right sets the look of every Who Are You People? window: the player card, the Whispers window, the Armory copy box and this settings page. Pick a style and the addon asks to reload the UI, which is when the new look takes effect. The styles match EllesmereUI's: WoW Forever (the default), EllesmereUI, Classic WoW UI and Blizzard (Retail). **Restore defaults** leaves the style alone.
+- **UI style:** the dropdown at the top right sets the look of every Who Are You People? window: the player card, the Whispers window, the Armory copy box and the settings window. Pick a style and the addon asks to reload the UI, which is when the new look takes effect. The styles match EllesmereUI's: WoW Forever (the default), EllesmereUI, Classic WoW UI and Blizzard (Retail). **Restore defaults** leaves the style alone.
 
 | Section | Switches |
 |---|---|
@@ -141,10 +141,10 @@ If a real player gets flagged, click **[not spam]** on their whisper or type `/w
 
 The Who Are You People? button on the edge of your minimap gives quick access to the addon.
 
-- **Left-click:** open the settings.
+- **Left-click:** open or close the Whispers window.
+- **Shift-click or middle-click:** open or close the settings.
 - **Right-click:** open the player card for whoever whispered you last.
 - **Drag:** move it around the minimap. It remembers where you put it.
-- **Shift-click or middle-click:** open or close the Whispers window.
 
 Hide it with the *Minimap button* switch in settings or `/wi minimap`.
 
@@ -155,7 +155,7 @@ All commands start with `/wi` (or `/wayp`, `/whoareyoupeople`). Names can be typ
 | Command | What it does |
 |---|---|
 | `/wi` | Shows the list of commands. |
-| `/wi config` | Opens the settings (same as left-clicking the minimap button). |
+| `/wi config` | Opens the settings window (same as shift-clicking the minimap button). |
 | `/wi Name` | Opens the player card for anyone, e.g. `/wi addled ark`, and looks them up. |
 | `/wi list` | The last 10 people who whispered you, each with a `[who]` link. |
 | `/wi armory Name` | Opens the copy box with that player's Armory link. |
@@ -194,12 +194,32 @@ Keep a copy of a working `WhoAreYouPeople` folder outside the game folder, so yo
 
 **Found a bug or have an idea?** Open an issue or contact quake_x1. Include the error text, your `WhoAreYouPeople.lua` file, and what you were doing when it happened.
 
+## Development
+
+The addon is split into one Lua file per feature. The `.toc` lists them in load order, and they share one namespace table (`local ADDON, ns = ...`):
+
+| File | What's in it |
+|---|---|
+| `Core.lua` | shared state, saved-settings defaults, name and text helpers |
+| `Styles.lua` | the four UI style kits |
+| `Lookup.lua` | finding out who a player is, `/who`, party roles |
+| `Chat.lua` | chat filters: whisper tag, class and role icons, spam flag, links |
+| `Card.lua` | the player card and the Armory copy box |
+| `Settings.lua` | the settings window, its preview, and the button in the game's options |
+| `Minimap.lua` | the minimap button |
+| `Whispers.lua` | the Whispers window and saved conversations |
+| `Events.lua` | events, loading saved data, `/wi` commands (loads last) |
+
+- `make test` checks the syntax of every file, then loads the addon in a fake WoW environment (`tests/smoke.lua`) and fires every handler, once per UI style.
+- `make release` runs the tests, then builds `release/WhoAreYouPeople-<version>.zip`. Pushing to `main` does the same on GitHub and publishes the zip as a release.
+
 ## Changelog
 
 Newest changes first.
 
 | Version | Date | Changes |
 |---|---|---|
+| 3.1.0 | Nov 21, 2026 | Settings open in their own window, drawn in your UI style, and no longer close the Whispers window; the game's AddOns options page has an **Open settings** button. Battle.net whispers are kept in the Whispers window, and replies there go out as Battle.net whispers. Minimap button: left-click now opens the Whispers window, shift-click the settings. The code is split into one file per feature. |
 | 3.0.0 | Nov 21, 2026 | UI styles replace the colour themes: WoW Forever (default, the look from before 2.2.0), EllesmereUI (flat), Classic WoW UI and Blizzard (Retail). Changing the style reloads the UI. |
 | 2.2.0 | Nov 21, 2026 | New EllesmereUI-style look for every window: flat dark panels, thin borders, on/off switches in settings, and a new Armory copy box. Each theme has its own background tint. The theme picker is now a dropdown. Uses EllesmereUI's font when it is installed. |
 | 2.1.0 | Nov 21, 2026 | Themes: pick an accent colour matching EllesmereUI's themes from the top of the settings page. |

@@ -1,9 +1,10 @@
 -- Smoke test: load the addon against a fake WoW API, build every window,
 -- and fire every script handler to catch Lua runtime errors in our code.
 -- It can't check how things look or that the real game API behaves as faked.
--- Usage: lua tests/smoke.lua WhoAreYouPeople.lua [style]   (VERBOSE=1 for chat output)
+-- Usage: lua tests/smoke.lua WhoAreYouPeople.toc [style]   (VERBOSE=1 for chat output)
+-- Loads every Lua file the .toc lists, in order, sharing one namespace table like the game does.
 -- style is a saved UI style (forever, eui, classic, blizzard), as if picked before a reload.
-local addonFile, style = arg[1], arg[2]
+local tocFile, style = arg[1], arg[2]
 local VERBOSE = os.getenv("VERBOSE")
 
 local objects = {}
@@ -95,7 +96,12 @@ Settings = {
 C_FriendList = setmetatable({ GetNumWhoResults = function() return 0 end }, { __index = function() return function() end end })
 C_ChatInfo, C_GuildInfo = {}, {}
 C_Timer = { After = function(_, fn) end, NewTimer = function() return { Cancel = function() end } end }
-ChatFrame_AddMessageEventFilter = function() end
+-- chat filters are kept so the test can run them on sample whispers
+local chatFilters = {}
+ChatFrame_AddMessageEventFilter = function(event, fn)
+  chatFilters[event] = chatFilters[event] or {}
+  table.insert(chatFilters[event], fn)
+end
 ChatFrame_RemoveMessageEventFilter = function() end
 hooksecurefunc = function() end
 function strtrim(s) return (s:gsub("^%s+", ""):gsub("%s+$", "")) end
@@ -131,6 +137,20 @@ math.atan2 = math.atan2 or math.atan
 unpack = unpack or table.unpack
 getn = function(t) return #t end
 function issecretvalue() return false end
+-- one Battle.net friend, playing a WoW character
+BNET_CLIENT_WOW = "WoW"
+local BN_FRIEND = { battleTag = "Friend#1234", bnetAccountID = 7, gameAccountInfo = {
+  isOnline = true, clientProgram = "WoW", characterName = "Addled", realmName = "", characterLevel = 24,
+  className = "Paladin", playerGuid = nil } }
+C_BattleNet = {
+  GetAccountInfoByID = function() return BN_FRIEND end,
+  GetFriendAccountInfo = function() return BN_FRIEND end,
+  GetFriendNumGameAccounts = function() return 1 end,
+  GetFriendGameAccountInfo = function() return BN_FRIEND.gameAccountInfo end,
+}
+function BNGetNumFriends() return 1 end
+function BNSendWhisper() end
+function HideUIPanel(f) f:Hide() end
 BackdropTemplateMixin = {}
 function Mixin(o, m) for k, v in pairs(m) do o[k] = v end return o end
 function StaticPopup_Show() end
@@ -176,8 +196,15 @@ end
 
 print("== load" .. (style and (" (UI style: " .. style .. ")") or ""))
 if style then rawset(_G, "WhisperInfoDB", { options = { uiStyle = style } }) end
-local chunk = assert(loadfile(addonFile))
-try("load", chunk, "WhoAreYouPeople")
+local dir = tocFile:match("^(.*[/\\])") or ""
+local ns = {}
+for raw in io.lines(tocFile) do
+  local file = raw:gsub("\r$", "")
+  if file:match("%.lua$") and not file:match("^#") then
+    local chunk = assert(loadfile(dir .. file))
+    try("load " .. file, chunk, "WhoAreYouPeople", ns)
+  end
+end
 
 print("== events")
 FireAll("OnEvent", "ADDON_LOADED", "WhoAreYouPeople")
@@ -190,8 +217,20 @@ for _, cmd in ipairs({ "", "config", "whispers", "addled ark", "armory addled ar
   try("/wi " .. cmd, slash, cmd)
 end
 
-print("== record a whisper conversation")
+print("== whispers, in and out, from a character and a Battle.net friend")
+local function RunFilters(event, ...)
+  for _, fn in ipairs(chatFilters[event] or {}) do try("filter " .. event, fn, nil, event, ...) end
+end
+-- chat event args: msg, sender, then 7 more before lineID (arg11), guid (arg12) and bnSenderID (arg13)
+RunFilters("CHAT_MSG_WHISPER", "lf healer for Deadmines?", "Addled Ark", "", "", "", "", 0, 0, "", 0, 101, nil)
+RunFilters("CHAT_MSG_BN_WHISPER", "want to run Deadmines?", "Friend", "", "", "", "", 0, 0, "", 0, 102, nil, 7)
 FireAll("OnEvent", "CHAT_MSG_WHISPER_INFORM", "hello there", "Addled Ark")
+FireAll("OnEvent", "CHAT_MSG_BN_WHISPER_INFORM", "sure, inviting", "Friend", "", "", "", "", 0, 0, "", 0, 103, nil, 7)
+local convos = WhisperInfoDB and WhisperInfoDB.convos or {}
+if not (convos["Addled Ark"] and convos["BN:Friend#1234"] and #convos["BN:Friend#1234"].msgs == 2) then
+  failures = failures + 1
+  print("FAIL whispers were not saved as conversations (character and Battle.net, both directions)")
+end
 
 print("== every window shown, every handler fired (" .. #objects .. " frames)")
 for _, theme in ipairs({ "Who Are You People?", "Horde", "Faction (Auto)", "Class Colored", "Midnight" }) do
