@@ -40,15 +40,15 @@ local function Fill(frame, layer, r, g, b, a, sublevel)
   return t
 end
 
--- Shared by every look: movable, kept on screen, Esc closes it.
-local function Movable(f, name, w, h, strata)
+-- Shared by every look: movable, kept on screen, and Esc closes it unless keepOnEsc.
+local function Movable(f, name, w, h, strata, keepOnEsc)
   f:SetSize(w, h)
   f:SetFrameStrata(strata)
   f:SetMovable(true); f:EnableMouse(true); f:SetClampedToScreen(true)
   f:RegisterForDrag("LeftButton")
   f:SetScript("OnDragStart", f.StartMoving)
   f:SetScript("OnDragStop", f.StopMovingOrSizing)
-  tinsert(UISpecialFrames, name)
+  if not keepOnEsc then tinsert(UISpecialFrames, name) end
 end
 
 -- Game-font text for the Blizzard-drawn looks; size picks the closest font object.
@@ -118,9 +118,9 @@ KITS.forever = forever
 
 forever.Text = GameText
 
-function forever.Window(name, w, h, titleText, strata)
+function forever.Window(name, w, h, titleText, strata, keepOnEsc)
   local f = CreateFrame("Frame", name, UIParent, "BasicFrameTemplateWithInset")
-  Movable(f, name, w, h, strata)
+  Movable(f, name, w, h, strata, keepOnEsc)
   local title = f.TitleText or f.title
   if not title then
     title = f:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
@@ -227,10 +227,10 @@ function forever.Decorate() end   -- extra lines and stripes: the flat look only
 local blizzard = setmetatable({ key = "blizzard" }, { __index = forever })
 KITS.blizzard = blizzard
 
-function blizzard.Window(name, w, h, titleText, strata)
+function blizzard.Window(name, w, h, titleText, strata, keepOnEsc)
   local ok, f = pcall(CreateFrame, "Frame", name, UIParent, "ButtonFrameTemplate")
-  if not ok then return forever.Window(name, w, h, titleText, strata) end
-  Movable(f, name, w, h, strata)
+  if not ok then return forever.Window(name, w, h, titleText, strata, keepOnEsc) end
+  Movable(f, name, w, h, strata, keepOnEsc)
   if ButtonFrameTemplate_HidePortrait then ButtonFrameTemplate_HidePortrait(f) end
   if ButtonFrameTemplate_HideButtonBar then ButtonFrameTemplate_HideButtonBar(f) end
   local title = (f.TitleContainer and f.TitleContainer.TitleText) or f.TitleText
@@ -247,9 +247,9 @@ end
 local classic = setmetatable({ key = "classic" }, { __index = forever })
 KITS.classic = classic
 
-function classic.Window(name, w, h, titleText, strata)
+function classic.Window(name, w, h, titleText, strata, keepOnEsc)
   local f = CreateFrame("Frame", name, UIParent, BACKDROP)
-  Movable(f, name, w, h, strata)
+  Movable(f, name, w, h, strata, keepOnEsc)
   Backdrop(f, DIALOG_BACKDROP, 1, 1, 1, 1)
   local header = f:CreateTexture(nil, "ARTWORK")
   header:SetTexture("Interface\\DialogFrame\\UI-DialogBox-Header")
@@ -398,9 +398,9 @@ function eui.Input(parent)
 end
 
 -- dark title bar with an accent rule under it and a close X
-function eui.Window(name, w, h, titleText, strata)
+function eui.Window(name, w, h, titleText, strata, keepOnEsc)
   local f = CreateFrame("Frame", name, UIParent)
-  Movable(f, name, w, h, strata)
+  Movable(f, name, w, h, strata, keepOnEsc)
   FlatBackground(f)
   Outline(f, LOOK.edge)
   local bar = Fill(f, "BORDER", 0, 0, 0, LOOK.shade)
