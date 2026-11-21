@@ -1097,13 +1097,11 @@ local function BuildMinimapButton()
   bg:SetTexture("Interface\\Minimap\\UI-Minimap-Background")
   bg:SetPoint("TOPLEFT", 7, -5)
 
-  -- a green "?" drawn as text, centred on the dark circle inside the ring
-  local qm = b:CreateFontString(nil, "ARTWORK")
-  qm:SetFont(STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF", 17, "OUTLINE")
-  qm:SetPoint("CENTER", bg, "CENTER", 1, 0)
-  qm:SetText("?")
-  qm:SetTextColor(0.25, 1, 0.25)
-  b.qm = qm
+  local icon = b:CreateTexture(nil, "ARTWORK")
+  icon:SetSize(18, 18)
+  icon:SetTexture("Interface\\AddOns\\WhoAreYouPeople\\icon")
+  icon:SetTexCoord(0.05, 0.95, 0.05, 0.95)
+  icon:SetPoint("CENTER", bg, "CENTER", 0, 0)
 
   local border = b:CreateTexture(nil, "OVERLAY")
   border:SetSize(53, 53)
