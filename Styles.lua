@@ -203,8 +203,9 @@ end
 function forever.Sidebar(m)
   local divider = m:CreateTexture(nil, "ARTWORK")
   divider:SetColorTexture(0.6, 0.5, 0.3, 0.5)
-  divider:SetSize(1, 352)
+  divider:SetWidth(1)
   divider:SetPoint("TOPLEFT", 182, -32)
+  divider:SetPoint("BOTTOMLEFT", 182, 16)
 end
 
 function forever.ListRow(b)
@@ -547,8 +548,43 @@ function eui.Decorate(frame, kind, a, b2, i)
   end
 end
 
+-- Drag the bottom-right corner to resize; onDone runs when the drag ends.
+-- The game's chat size grabber, set in from the corner by the window border.
+local GRIP = "Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-"
+local function MakeResizeGrip(kit, frame, minW, minH, maxW, maxH, onDone)
+  frame:SetResizable(true)
+  if frame.SetResizeBounds then
+    frame:SetResizeBounds(minW, minH, maxW, maxH)
+  else
+    frame:SetMinResize(minW, minH)
+    frame:SetMaxResize(maxW, maxH)
+  end
+  local grip = CreateFrame("Button", nil, frame)
+  grip:SetSize(16, 16)
+  grip:SetPoint("BOTTOMRIGHT", -kit.gripInset, kit.gripInset)
+  grip:SetFrameLevel(frame:GetFrameLevel() + 10)
+  grip:SetNormalTexture(GRIP .. "Up")
+  grip:SetPushedTexture(GRIP .. "Down")
+  grip:SetHighlightTexture(GRIP .. "Highlight")
+  if kit.flat then
+    for _, t in ipairs({ grip:GetNormalTexture(), grip:GetPushedTexture() }) do
+      t:SetDesaturated(true)
+      t:SetVertexColor(1, 1, 1, 0.5)
+    end
+  end
+  grip:SetScript("OnMouseDown", function() frame:StartSizing("BOTTOMRIGHT") end)
+  grip:SetScript("OnMouseUp", function()
+    frame:StopMovingOrSizing()
+    onDone()
+  end)
+  return grip
+end
+
+forever.gripInset, classic.gripInset, eui.gripInset = 4, 12, 2
+
 for _, kit in pairs(KITS) do
   kit.Dropdown = function(...) return MakeDropdown(kit, ...) end
+  kit.ResizeGrip = function(...) return MakeResizeGrip(kit, ...) end
   kit.Background = kit.Background or function() end
 end
 
