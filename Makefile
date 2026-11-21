@@ -3,7 +3,7 @@ FILES   := $(ADDON).toc $(ADDON).lua icon.tga
 VERSION := $(shell sed -n 's/^\#\# Version: *//p' $(ADDON).toc | tr -d '\r')
 ZIP     := release/$(ADDON)-$(VERSION).zip
 
-.PHONY: release clean
+.PHONY: release clean version
 
 release: $(ZIP)
 
@@ -19,3 +19,6 @@ $(ZIP): $(FILES)
 
 clean:
 	rm -rf release
+
+version:
+	@echo $(VERSION)
