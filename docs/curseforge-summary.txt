@@ -1,0 +1,1 @@
+Level, class and guild on every whisper, so you know who you're inviting.

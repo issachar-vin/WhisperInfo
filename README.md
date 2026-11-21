@@ -1,6 +1,8 @@
-# WhisperInfo
+# Who Are You People?
 
 A WoW Forever addon that tells you who is whispering you before you invite them. It is built for picking up players for dungeons without guessing.
+
+The name comes from the SpongeBob *"Who are you people?"* meme, which is exactly how it feels when strangers start whispering you.
 
 - **Whisper tag:** every whisper starts with the sender's level, class and guild, e.g. `[Lvl 24 Paladin <Night Watch> [who] [armory]]`.
 - **Player card:** click `[who]` to open a window with everything the game can tell you about that player, plus Whisper, Invite and Armory buttons.
@@ -17,11 +19,13 @@ A WoW Forever addon that tells you who is whispering you before you invite them.
 1. Download this repo (**Code → Download ZIP**).
 2. In Battle.net, select WoW Forever, click the gear icon next to Play, and choose **Show in Explorer**.
 3. Open `Interface\AddOns\`. If either folder is missing, create it with that exact spelling.
-4. Extract the zip there and rename the folder to `WhisperInfo`. You should have `Interface\AddOns\WhisperInfo\` holding `WhisperInfo.toc` and `WhisperInfo.lua`, not a folder nested inside another.
-5. Start the game. On the character screen, click **AddOns** and tick **WhisperInfo**. If it says out of date, tick **Load out of date AddOns**.
+4. Extract the zip there and rename the folder to `WhoAreYouPeople`. You should have `Interface\AddOns\WhoAreYouPeople\` holding `WhoAreYouPeople.toc` and `WhoAreYouPeople.lua`, not a folder nested inside another.
+5. Start the game. On the character screen, click **AddOns** and tick **Who Are You People?**. If it says out of date, tick **Load out of date AddOns**.
 6. In game, type `/wi`. You should see the list of commands.
 
-To update, delete the old `WhisperInfo` folder first, extract the new one, then type `/reload`. Your saved players are kept.
+To update, delete the old `WhoAreYouPeople` folder first, extract the new one, then type `/reload`. Your saved players are kept.
+
+**Coming from WhisperInfo?** Delete the old `WhisperInfo` folder and install `WhoAreYouPeople` as above. To keep your saved players, settings and whisper history, close the game, go to `WTF\Account\<your account>\SavedVariables\` in the Forever folder, and copy `WhisperInfo.lua` to a new file named `WhoAreYouPeople.lua` in the same place.
 
 ## Reading the whisper tag
 
@@ -83,7 +87,7 @@ Three switches in the *Whisper window* settings section control it:
 
 | Switch | Default | What it does |
 |---|---|---|
-| Keep whispers in the WhisperInfo window | On | Main switch. Off = no window and no saved history. |
+| Keep whispers in the Whispers window | On | Main switch. Off = no window and no saved history. |
 | Open the window when someone whispers you | Off | Pops the window open on a new whisper. |
 | Take whispers out of the normal chat window | Off | Whispers, yours and theirs, only appear in the Whispers window. |
 
@@ -91,7 +95,7 @@ Battle.net whispers still appear only in normal chat.
 
 ## Settings
 
-Every feature has its own on/off switch. Open the settings with `/wi config`, a left-click on the minimap button, or Game Menu → Options → AddOns → WhisperInfo. Changes apply straight away.
+Every feature has its own on/off switch. Open the settings with `/wi config`, a left-click on the minimap button, or Game Menu → Options → AddOns → Who Are You People?. Changes apply straight away.
 
 - **Preview:** sample chat lines at the top redraw every time you tick a box, so you see the result before closing the window.
 - **Sections:** click a section header's **+** / **−** to open or close it. Closed headers show a count such as *5 of 9 on*. The page remembers which sections you leave open.
@@ -144,7 +148,7 @@ Hide it with the *Minimap button* switch in settings or `/wi minimap`.
 
 ## Commands
 
-All commands start with `/wi` (or `/whisperinfo`). Names can be typed in lowercase.
+All commands start with `/wi` (or `/wayp`, `/whoareyoupeople`). Names can be typed in lowercase.
 
 | Command | What it does |
 |---|---|
@@ -177,15 +181,15 @@ Forever runs mega-servers with rulesets (PvP, RP PvP, PvE, RP) and no realm name
 
 | Problem | Fix |
 |---|---|
-| Addon shows as out of date | Tick **Load out of date AddOns**. For a lasting fix, type `/dump (select(4, GetBuildInfo()))` in game, then put that number in the `## Interface:` line of `WhisperInfo.toc` and `/reload`. |
-| No tag on whispers at all | Check WhisperInfo is ticked in the AddOns list and type `/reload`. |
+| Addon shows as out of date | Tick **Load out of date AddOns**. For a lasting fix, type `/dump (select(4, GetBuildInfo()))` in game, then put that number in the `## Interface:` line of `WhoAreYouPeople.toc` and `/reload`. |
+| No tag on whispers at all | Check Who Are You People? is ticked in the AddOns list and type `/reload`. |
 | `Lvl ?` never fills in | Click once in the game world (not a menu), or click `[who]`. If it still stays, they are probably on the other faction. |
 | Icons show as `[T]`, `[H]`, `[D]` or blank squares | The game is missing that icon image. The letters are the backup and still work. |
 | A Lua error pops up | Turn on errors with `/console scriptErrors 1` (or install BugSack), copy the error, and open an issue with it. |
 
-Keep a copy of a working `WhisperInfo` folder outside the game folder, so you can go back to it if an update causes trouble.
+Keep a copy of a working `WhoAreYouPeople` folder outside the game folder, so you can go back to it if an update causes trouble.
 
-**Found a bug or have an idea?** Open an issue or contact quake_x1. Include the error text, your `WhisperInfo.lua` file, and what you were doing when it happened.
+**Found a bug or have an idea?** Open an issue or contact quake_x1. Include the error text, your `WhoAreYouPeople.lua` file, and what you were doing when it happened.
 
 ## Changelog
 
@@ -193,6 +197,7 @@ Newest changes first.
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.0.0 | Nov 21, 2026 | Renamed from WhisperInfo to Who Are You People?. New folder name `WhoAreYouPeople` and new slash command `/wayp` (`/wi` still works). Addon icon in the AddOns list. |
 | 1.7.1 | Nov 21, 2026 | Minimap button is now a green question mark, centred in the ring. |
 | 1.7.0 | Nov 21, 2026 | New **Whispers window**: conversation list, saved history, reply box, Card and Invite buttons. New *Whisper window* settings section. |
 | 1.6.0 | Nov 21, 2026 | `[who]` and `[armory]` can show as icons. Minimap button became a question mark. Settings sections now open and close (+ / −). |

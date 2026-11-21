@@ -1,4 +1,4 @@
--- WhisperInfo: level, class and guild on whispers, a player card, class and
+-- Who Are You People?: level, class and guild on whispers, a player card, class and
 -- role icons in chat, and a settings panel to turn each feature on or off.
 local ADDON = ...
 local f = CreateFrame("Frame")
@@ -50,7 +50,7 @@ local DEFAULTS = {
   -- other
   minimap       = true,
   -- whisper window
-  whisperWindow   = true,  -- keep whispers in the WhisperInfo window
+  whisperWindow   = true,  -- keep whispers in the WhoAreYouPeople window
   whisperAutoOpen = false, -- open the window when someone whispers you
   whisperHideChat = false, -- take whispers out of the normal chat window
 }
@@ -73,7 +73,7 @@ local SPAM_MAX_LEVEL = 5
 local lastWhisperer       -- for the minimap button's right-click
 
 local function Print(msg)
-  DEFAULT_CHAT_FRAME:AddMessage("|cff00ccffWhisperInfo|r: " .. msg)
+  DEFAULT_CHAT_FRAME:AddMessage("|cff40ff40Who Are You People?|r " .. msg)
 end
 
 -- Whispers during some instance encounters arrive as secret values.
@@ -142,12 +142,12 @@ local ARMORY_ICON = "|TInterface\\Icons\\INV_Chest_Chain:14:14:0:0:64:64:5:59:5:
 
 local function WhoLink(full)
   local label = On("linkIcons") and WHO_ICON or "[who]"
-  return " |cff00ccff|Haddon:WhisperInfo:who:" .. full .. "|h" .. label .. "|h|r"
+  return " |cff00ccff|Haddon:WhoAreYouPeople:who:" .. full .. "|h" .. label .. "|h|r"
 end
 
 local function ArmoryLink(full)
   local label = On("linkIcons") and ARMORY_ICON or "[armory]"
-  return " |cffffd100|Haddon:WhisperInfo:armory:" .. full .. "|h" .. label .. "|h|r"
+  return " |cffffd100|Haddon:WhoAreYouPeople:armory:" .. full .. "|h" .. label .. "|h|r"
 end
 
 -- e.g. https://worldofwarcraft.blizzard.com/en-us/forever/us/armory/character/addled-ark
@@ -455,7 +455,7 @@ SpamReason = function(e, full, msg)
 end
 
 local function SpamLink(full)
-  return " |cff9d9d9d|Haddon:WhisperInfo:notspam:" .. full .. "|h[not spam]|h|r"
+  return " |cff9d9d9d|Haddon:WhoAreYouPeople:notspam:" .. full .. "|h[not spam]|h|r"
 end
 
 local function OnWhisper(_, event, msg, sender, ...)
@@ -515,7 +515,7 @@ local function OnBNWhisper(_, event, msg, sender, ...)
   return false, tag .. msg, sender, ...
 end
 
-local function OnWhisperInform(_, event, msg, target, ...)
+local function OnWhoAreYouPeoplerm(_, event, msg, target, ...)
   if On("whisperHideChat") and not IsSecret(msg) then return true end
   return false
 end
@@ -523,7 +523,7 @@ end
 ---------------------------------------------------------------- links
 local function OnLink(link)
   if type(link) ~= "string" then return end
-  local cmd, full = link:match("^addon:WhisperInfo:(%a+):(.+)$")
+  local cmd, full = link:match("^addon:WhoAreYouPeople:(%a+):(.+)$")
   if not full then return end
   if cmd == "armory" then
     ShowArmory(full)
@@ -583,7 +583,7 @@ local function WhoFound(full, lvl, guild, zone)
   e.whoMissed = nil
   if waitingWho[full] then
     waitingWho[full] = nil
-    local card = _G.WhisperInfoCard
+    local card = _G.WhoAreYouPeopleCard
     local spam = OPT.spamFlag and SpamReason and SpamReason(e, full, "")
     if spam then e.spam = true end
     if OPT.printLookups and not (card and card:IsShown() and card.full == full) then
@@ -635,7 +635,7 @@ local function CardButton(parent, text, w)
 end
 
 local function BuildCard()
-  card = CreateFrame("Frame", "WhisperInfoCard", UIParent, "BasicFrameTemplateWithInset")
+  card = CreateFrame("Frame", "WhoAreYouPeopleCard", UIParent, "BasicFrameTemplateWithInset")
   card:SetSize(320, 372)
   card:SetPoint("CENTER", UIParent, "CENTER", 260, 40)
   card:SetFrameStrata("DIALOG")
@@ -643,14 +643,14 @@ local function BuildCard()
   card:RegisterForDrag("LeftButton")
   card:SetScript("OnDragStart", card.StartMoving)
   card:SetScript("OnDragStop", card.StopMovingOrSizing)
-  tinsert(UISpecialFrames, "WhisperInfoCard")   -- Esc closes it
+  tinsert(UISpecialFrames, "WhoAreYouPeopleCard")   -- Esc closes it
 
   local title = card.TitleText or card.title
   if not title then
     title = card:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     title:SetPoint("TOP", 0, -5)
   end
-  title:SetText("WhisperInfo")
+  title:SetText("Who Are You People?")
 
   card.icon = card:CreateTexture(nil, "ARTWORK")
   card.icon:SetSize(44, 44)
@@ -805,7 +805,7 @@ local function PreviewLines()
 
   -- 2) the lookup result
   if OPT.printLookups then
-    lines[#lines + 1] = "|cff00ccffWhisperInfo|r: Addled Ark is " .. Describe(sample) .. GRAY .. " in Westfall|r" ..
+    lines[#lines + 1] = "|cff40ff40Who Are You People?|r Addled Ark is " .. Describe(sample) .. GRAY .. " in Westfall|r" ..
       GRAY .. (OPT.autoWho and "   (after your next click)|r" or "   (after you click [who])|r")
   else
     lines[#lines + 1] = GRAY .. "(lookup results fill in the tag and card, no chat line)|r"
@@ -881,7 +881,7 @@ local SECTIONS = {
     { key = "spamHide",      label = "Hide them completely instead of greying them out" },
   }},
   { title = "Whisper window", items = {
-    { key = "whisperWindow",   label = "Keep whispers in the WhisperInfo window" },
+    { key = "whisperWindow",   label = "Keep whispers in the Whispers window" },
     { key = "whisperAutoOpen", label = "Open the window when someone whispers you" },
     { key = "whisperHideChat", label = "Take whispers out of the normal chat window" },
   }},
@@ -894,12 +894,12 @@ local UpdateMinimapButton
 
 local function BuildSettings()
   local panel = CreateFrame("Frame")
-  panel.name = "WhisperInfo"
+  panel.name = "Who Are You People?"
   settingsPanel = panel
 
   local title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
   title:SetPoint("TOPLEFT", 16, -16)
-  title:SetText("WhisperInfo")
+  title:SetText("Who Are You People?")
   local sub = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
   sub:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -6)
   sub:SetText("Every feature has its own switch. Changes apply straight away.")
@@ -937,7 +937,7 @@ local function BuildSettings()
   end
 
   -- switches, in a scrolling list under the preview
-  local scroll = CreateFrame("ScrollFrame", "WhisperInfoSettingsScroll", panel, "UIPanelScrollFrameTemplate")
+  local scroll = CreateFrame("ScrollFrame", "WhoAreYouPeopleSettingsScroll", panel, "UIPanelScrollFrameTemplate")
   scroll:SetPoint("TOPLEFT", box, "BOTTOMLEFT", 0, -8)
   scroll:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -30, 10)
   local content = CreateFrame("Frame", nil, scroll)
@@ -1053,7 +1053,7 @@ local function BuildSettings()
   panel:SetScript("OnShow", Refresh)
 
   if Settings and Settings.RegisterCanvasLayoutCategory then
-    settingsCategory = Settings.RegisterCanvasLayoutCategory(panel, "WhisperInfo")
+    settingsCategory = Settings.RegisterCanvasLayoutCategory(panel, "Who Are You People?")
     Settings.RegisterAddOnCategory(settingsCategory)
   elseif InterfaceOptions_AddCategory then
     InterfaceOptions_AddCategory(panel)
@@ -1083,7 +1083,7 @@ end
 
 local function BuildMinimapButton()
   if mmButton or not Minimap then return end
-  local b = CreateFrame("Button", "WhisperInfoMinimapButton", Minimap)
+  local b = CreateFrame("Button", "WhoAreYouPeopleMinimapButton", Minimap)
   mmButton = b
   b:SetSize(31, 31)
   b:SetFrameStrata("MEDIUM")
@@ -1132,7 +1132,7 @@ local function BuildMinimapButton()
   b:SetScript("OnDragStop", function(self) self:SetScript("OnUpdate", nil) end)
   b:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, "ANCHOR_LEFT")
-    GameTooltip:AddLine("WhisperInfo")
+    GameTooltip:AddLine("Who Are You People?")
     GameTooltip:AddLine("Left-click: settings", 1, 1, 1)
     GameTooltip:AddLine("Right-click: card for your last whisper", 1, 1, 1)
     GameTooltip:AddLine("Shift-click: whisper window", 1, 1, 1)
@@ -1218,7 +1218,7 @@ local function RefreshMessenger()
 end
 
 local function BuildMessenger()
-  local m = CreateFrame("Frame", "WhisperInfoMessenger", UIParent, "BasicFrameTemplateWithInset")
+  local m = CreateFrame("Frame", "WhoAreYouPeopleMessenger", UIParent, "BasicFrameTemplateWithInset")
   messenger = m
   m:SetSize(600, 400)
   if DB.messengerPos then
@@ -1236,7 +1236,7 @@ local function BuildMessenger()
     DB.messengerPos = { self:GetPoint(1) }
     DB.messengerPos[2] = nil
   end)
-  tinsert(UISpecialFrames, "WhisperInfoMessenger")
+  tinsert(UISpecialFrames, "WhoAreYouPeopleMessenger")
   local title = m.TitleText or m.title
   if not title then
     title = m:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
@@ -1430,7 +1430,7 @@ f:SetScript("OnEvent", function(_, event, arg1, arg2)
     add("CHAT_MSG_WHISPER", OnWhisper)
     add("CHAT_MSG_BN_WHISPER", OnBNWhisper)
     add("CHAT_MSG_SYSTEM", HideWhoLine)
-    add("CHAT_MSG_WHISPER_INFORM", OnWhisperInform)
+    add("CHAT_MSG_WHISPER_INFORM", OnWhoAreYouPeoplerm)
     -- class icons are registered after the whisper filter so they end up first on the line
     for _, ev in ipairs({ "CHAT_MSG_SAY", "CHAT_MSG_YELL", "CHAT_MSG_GUILD", "CHAT_MSG_OFFICER",
                           "CHAT_MSG_PARTY", "CHAT_MSG_PARTY_LEADER", "CHAT_MSG_RAID",
@@ -1487,7 +1487,8 @@ end)
 
 ---------------------------------------------------------------- /wi
 SLASH_WHISPERINFO1 = "/wi"
-SLASH_WHISPERINFO2 = "/whisperinfo"
+SLASH_WHISPERINFO2 = "/wayp"
+SLASH_WHISPERINFO3 = "/whoareyoupeople"
 SlashCmdList.WHISPERINFO = function(msg)
   msg = strtrim(msg or "")
   local lower = msg:lower()
