@@ -75,17 +75,18 @@ local SPAM_MAX_LEVEL = 5
 local lastWhisperer       -- for the minimap button's right-click
 
 ---------------------------------------------------------------- themes
--- Accent colours matching EllesmereUI's themes. A nil colour is worked out
--- from the player (faction or class) when it is used.
+-- Accent colours matching EllesmereUI's themes, each with its own window
+-- background tint. A missing colour is worked out from the player (faction or
+-- class) when it is used.
 local THEMES = {
-  { name = "Who Are You People?", r = 0.25, g = 1,     b = 0.25 },
-  { name = "EllesmereUI",         r = 12/255,  g = 210/255, b = 157/255 },
-  { name = "EllesmereUI Forever", r = 220/255, g = 167/255, b = 127/255 },
-  { name = "Horde",               r = 1,       g = 90/255,  b = 31/255 },
-  { name = "Alliance",            r = 63/255,  g = 167/255, b = 1 },
+  { name = "Who Are You People?", r = 0.25, g = 1,     b = 0.25,      bg = { 0.035, 0.065, 0.040 } },
+  { name = "EllesmereUI",         r = 12/255,  g = 210/255, b = 157/255, bg = { 0.030, 0.068, 0.058 } },
+  { name = "EllesmereUI Forever", r = 220/255, g = 167/255, b = 127/255, bg = { 0.075, 0.058, 0.045 } },
+  { name = "Horde",               r = 1,       g = 90/255,  b = 31/255,  bg = { 0.095, 0.040, 0.030 } },
+  { name = "Alliance",            r = 63/255,  g = 167/255, b = 1,       bg = { 0.030, 0.050, 0.095 } },
   { name = "Faction (Auto)" },
-  { name = "Midnight",            r = 120/255, g = 65/255,  b = 200/255 },
-  { name = "Dark",                r = 1,       g = 1,       b = 1 },
+  { name = "Midnight",            r = 120/255, g = 65/255,  b = 200/255, bg = { 0.055, 0.038, 0.090 } },
+  { name = "Dark",                r = 1,       g = 1,       b = 1,       bg = { 0.050, 0.050, 0.050 } },
   { name = "Class Colored" },
 }
 local THEME_BY_NAME = {}
@@ -95,16 +96,31 @@ local function CurrentTheme()
   return THEME_BY_NAME[OPT and OPT.theme] or THEMES[1]
 end
 
-local function Accent()
-  local t = CurrentTheme()
+local function Resolve(t)
   if t.name == "Faction (Auto)" then
-    t = THEME_BY_NAME[UnitFactionGroup("player") == "Horde" and "Horde" or "Alliance"]
-  elseif t.name == "Class Colored" then
+    return THEME_BY_NAME[UnitFactionGroup("player") == "Horde" and "Horde" or "Alliance"]
+  end
+  return t
+end
+
+local function ThemeColor(t)
+  t = Resolve(t)
+  if t.name == "Class Colored" then
     local c = RAID_CLASS_COLORS and RAID_CLASS_COLORS[select(2, UnitClass("player"))]
     if c then return c.r, c.g, c.b end
     t = THEMES[1]
   end
   return t.r, t.g, t.b
+end
+
+local function Accent() return ThemeColor(CurrentTheme()) end
+
+-- window background: the theme's own tint, or a dark wash of the class colour
+local function ThemeBackground()
+  local t = Resolve(CurrentTheme())
+  if t.bg then return t.bg[1], t.bg[2], t.bg[3] end
+  local r, g, b = Accent()
+  return 0.035 + r * 0.05, 0.035 + g * 0.05, 0.035 + b * 0.05
 end
 
 local function AccentHex()
@@ -120,6 +136,8 @@ local function PaintAccent(target)
     target.obj:SetTextColor(r, g, b)
   elseif target.kind == "solid" then
     target.obj:SetColorTexture(r, g, b, target.a or 1)
+  elseif target.kind == "fn" then
+    target.obj(r, g, b)
   else
     target.obj:SetVertexColor(r, g, b, target.a or 1)
   end
@@ -131,6 +149,238 @@ local function UseAccent(obj, kind, a)
 end
 local function ApplyTheme()
   for _, target in ipairs(accentTargets) do PaintAccent(target) end
+end
+
+---------------------------------------------------------------- look
+-- Flat dark panels with hairline borders in the style of EllesmereUI, drawn
+-- with plain colour textures so none of its art is used. Its font is used
+-- only when EllesmereUI itself is installed.
+local LOOK = {
+  shade = 0.3,                      -- black alpha over the background for title bars, sidebars and inputs
+  line = 0.08,                      -- white alpha for borders and dividers
+  edge = 0.12,                      -- white alpha for button and input borders
+  dim  = 0.53,                      -- white alpha for secondary text
+}
+local FONT = (EllesmereUI and EllesmereUI.EXPRESSWAY) or STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF"
+
+local function Fill(frame, layer, r, g, b, a, sublevel)
+  local t = frame:CreateTexture(nil, layer, nil, sublevel)
+  t:SetColorTexture(r, g, b, a or 1)
+  return t
+end
+
+-- 1px border just inside the frame's edges; frame:SetOutline(r, g, b, a) recolours it
+local function Outline(frame, a)
+  local edges = {}
+  for i = 1, 4 do edges[i] = Fill(frame, "OVERLAY", 1, 1, 1, a or LOOK.line, 7) end
+  edges[1]:SetPoint("TOPLEFT"); edges[1]:SetPoint("TOPRIGHT"); edges[1]:SetHeight(1)
+  edges[2]:SetPoint("BOTTOMLEFT"); edges[2]:SetPoint("BOTTOMRIGHT"); edges[2]:SetHeight(1)
+  edges[3]:SetPoint("TOPLEFT"); edges[3]:SetPoint("BOTTOMLEFT"); edges[3]:SetWidth(1)
+  edges[4]:SetPoint("TOPRIGHT"); edges[4]:SetPoint("BOTTOMRIGHT"); edges[4]:SetWidth(1)
+  function frame:SetOutline(r, g, b, alpha)
+    for _, e in ipairs(edges) do e:SetColorTexture(r, g, b, alpha) end
+  end
+end
+
+local function Text(parent, size, alpha)
+  local fs = parent:CreateFontString(nil, "OVERLAY")
+  fs:SetFont(FONT, size or 12, "")
+  fs:SetTextColor(1, 1, 1, alpha or 1)
+  fs:SetShadowOffset(1, -1)
+  fs:SetShadowColor(0, 0, 0, 0.6)
+  return fs
+end
+
+-- the theme's background tint plus a faint accent glow fading down from the top
+local function ThemedBackground(frame)
+  local bg = Fill(frame, "BACKGROUND", 0, 0, 0, 1, -8)
+  bg:SetAllPoints()
+  local glow = Fill(frame, "BACKGROUND", 1, 1, 1, 1, -7)
+  glow:SetPoint("TOPLEFT"); glow:SetPoint("TOPRIGHT"); glow:SetHeight(140)
+  UseAccent(function(r, g, b)
+    local br, bgc, bb = ThemeBackground()
+    bg:SetColorTexture(br, bgc, bb, 0.97)
+    if CreateColor then
+      glow:SetGradient("VERTICAL", CreateColor(r, g, b, 0), CreateColor(r, g, b, 0.10))
+    else
+      glow:SetColorTexture(r, g, b, 0.04)
+    end
+  end, "fn")
+end
+
+-- the border lights up in the accent colour while hovered or focused
+local function AccentOutlineOn(frame) local r, g, b = Accent(); frame:SetOutline(r, g, b, 0.8) end
+local function AccentOutlineOff(frame) frame:SetOutline(1, 1, 1, LOOK.edge) end
+
+local function FlatButton(parent, text, w, h)
+  local b = CreateFrame("Button", nil, parent)
+  b:SetSize(w or 84, h or 22)
+  Fill(b, "BACKGROUND", 1, 1, 1, 0.06):SetAllPoints()
+  Fill(b, "HIGHLIGHT", 1, 1, 1, 0.05):SetAllPoints()
+  Outline(b, LOOK.edge)
+  local label = Text(b, 12)
+  label:SetPoint("CENTER")
+  b:SetFontString(label)
+  b:SetText(text or "")
+  b:HookScript("OnEnter", AccentOutlineOn)
+  b:HookScript("OnLeave", AccentOutlineOff)
+  b:HookScript("OnDisable", function(self) label:SetAlpha(0.4) end)
+  b:HookScript("OnEnable", function(self) label:SetAlpha(1) end)
+  return b
+end
+
+local function FlatInput(parent)
+  local eb = CreateFrame("EditBox", nil, parent)
+  Fill(eb, "BACKGROUND", 0, 0, 0, 0.35):SetAllPoints()
+  Outline(eb, LOOK.edge)
+  eb:SetFontObject(ChatFontNormal or GameFontHighlight)
+  eb:SetTextInsets(8, 8, 0, 0)
+  eb:SetAutoFocus(false)
+  eb:HookScript("OnEditFocusGained", AccentOutlineOn)
+  eb:HookScript("OnEditFocusLost", AccentOutlineOff)
+  return eb
+end
+
+-- A movable window with a dark title bar, an accent rule under it and a close X.
+-- Esc closes it. Content starts 30px from the top.
+local function FlatWindow(name, w, h, titleText, strata)
+  local f = CreateFrame("Frame", name, UIParent)
+  f:SetSize(w, h)
+  f:SetFrameStrata(strata)
+  f:SetMovable(true); f:EnableMouse(true); f:SetClampedToScreen(true)
+  f:RegisterForDrag("LeftButton")
+  f:SetScript("OnDragStart", f.StartMoving)
+  f:SetScript("OnDragStop", f.StopMovingOrSizing)
+  tinsert(UISpecialFrames, name)
+
+  ThemedBackground(f)
+  Outline(f, LOOK.edge)
+  local bar = Fill(f, "BORDER", 0, 0, 0, LOOK.shade)
+  bar:SetPoint("TOPLEFT"); bar:SetPoint("TOPRIGHT"); bar:SetHeight(28)
+  local rule = Fill(f, "ARTWORK", 1, 1, 1, 1)
+  rule:SetPoint("TOPLEFT", bar, "BOTTOMLEFT"); rule:SetPoint("TOPRIGHT", bar, "BOTTOMRIGHT"); rule:SetHeight(1)
+  UseAccent(rule, "solid", 0.7)
+
+  f.title = Text(f, 13)
+  f.title:SetPoint("LEFT", bar, "LEFT", 12, 0)
+  f.title:SetText(titleText)
+
+  local close = CreateFrame("Button", nil, f)
+  close:SetSize(28, 28)
+  close:SetPoint("TOPRIGHT")
+  local x = Text(close, 16, LOOK.dim)
+  x:SetPoint("CENTER", 0, 1)
+  x:SetText("×")
+  close:SetScript("OnEnter", function() x:SetTextColor(1, 1, 1, 1) end)
+  close:SetScript("OnLeave", function() x:SetTextColor(1, 1, 1, LOOK.dim) end)
+  close:SetScript("OnClick", function() f:Hide() end)
+  return f
+end
+
+-- On/off switch used in place of a checkbox; keeps the CheckButton calls
+-- (SetChecked, GetChecked, Enable, Disable, .label) the settings code relies on.
+local function Toggle(parent, labelText, onClick)
+  local t = CreateFrame("Button", nil, parent)
+  t:SetSize(470, 22)
+  local track = Fill(t, "ARTWORK", 0.267, 0.267, 0.267, 1)
+  track:SetSize(28, 14)
+  track:SetPoint("LEFT", 2, 0)
+  local knob = Fill(t, "OVERLAY", 1, 1, 1, 1)
+  knob:SetSize(10, 10)
+  t.label = Text(t, 12)
+  t.label:SetPoint("LEFT", track, "RIGHT", 10, 0)
+  t.label:SetText(labelText)
+  Fill(t, "HIGHLIGHT", 1, 1, 1, 0.04):SetAllPoints()
+
+  local function Paint(r, g, b)
+    if not r then r, g, b = Accent() end
+    local a = t:IsEnabled() and 1 or 0.35
+    knob:ClearAllPoints()
+    if t.checked then
+      track:SetColorTexture(r, g, b, a)
+      knob:SetPoint("RIGHT", track, "RIGHT", -2, 0)
+    else
+      track:SetColorTexture(0.267, 0.267, 0.267, a)
+      knob:SetPoint("LEFT", track, "LEFT", 2, 0)
+    end
+    knob:SetAlpha(a)
+  end
+  function t:SetChecked(on) self.checked = on and true or false; Paint() end
+  function t:GetChecked() return self.checked end
+  t:HookScript("OnEnable", function() Paint() end)
+  t:HookScript("OnDisable", function() Paint() end)
+  t:SetScript("OnClick", function(self) self:SetChecked(not self.checked); onClick(self) end)
+  UseAccent(Paint, "fn")
+  return t
+end
+
+-- Flat dropdown: items = { { name = "..." }, ... }; colorOf(item) gives the swatch.
+local function Dropdown(parent, w, items, colorOf, getCurrent, onPick)
+  local dd = FlatButton(parent, "", w, 24)
+  local label = dd:GetFontString()
+  label:ClearAllPoints()
+  label:SetPoint("LEFT", 26, 0)
+  label:SetPoint("RIGHT", -24, 0)
+  label:SetJustifyH("LEFT")
+  local swatch = Fill(dd, "ARTWORK", 1, 1, 1, 1)
+  swatch:SetSize(10, 10)
+  swatch:SetPoint("LEFT", 9, 0)
+  local arrow = dd:CreateTexture(nil, "ARTWORK")
+  arrow:SetTexture("Interface\\Buttons\\Arrow-Down-Up")
+  arrow:SetDesaturated(true)
+  arrow:SetVertexColor(1, 1, 1, LOOK.dim)
+  arrow:SetSize(12, 12)
+  arrow:SetPoint("RIGHT", -8, -3)
+
+  local list = CreateFrame("Frame", nil, dd)
+  list:SetFrameStrata("FULLSCREEN_DIALOG")
+  list:SetPoint("TOPLEFT", dd, "BOTTOMLEFT", 0, -2)
+  list:SetSize(w, #items * 22 + 2)
+  list:EnableMouse(true)
+  local listBg = Fill(list, "BACKGROUND", 0, 0, 0, 1)
+  listBg:SetAllPoints()
+  UseAccent(function() local r, g, b = ThemeBackground(); listBg:SetColorTexture(r * 0.8, g * 0.8, b * 0.8, 0.98) end, "fn")
+  Outline(list, LOOK.edge)
+  list:Hide()
+
+  local rows = {}
+  for i, item in ipairs(items) do
+    local row = CreateFrame("Button", nil, list)
+    row:SetSize(w - 2, 22)
+    row:SetPoint("TOPLEFT", 1, -1 - (i - 1) * 22)
+    Fill(row, "HIGHLIGHT", 1, 1, 1, 0.06):SetAllPoints()
+    row.bar = Fill(row, "ARTWORK", 1, 1, 1, 1)
+    row.bar:SetPoint("TOPLEFT"); row.bar:SetPoint("BOTTOMLEFT"); row.bar:SetWidth(2)
+    row.swatch = Fill(row, "ARTWORK", 1, 1, 1, 1)
+    row.swatch:SetSize(10, 10)
+    row.swatch:SetPoint("LEFT", 8, 0)
+    local text = Text(row, 12)
+    text:SetPoint("LEFT", 25, 0)
+    text:SetText(item.name)
+    row:SetScript("OnClick", function()
+      list:Hide()
+      onPick(item)
+    end)
+    row.item = item
+    rows[i] = row
+  end
+
+  function dd:Refresh()
+    local cur = getCurrent()
+    label:SetText(cur.name)
+    swatch:SetColorTexture(colorOf(cur))
+    for _, row in ipairs(rows) do
+      row.swatch:SetColorTexture(colorOf(row.item))
+      local r, g, b = Accent()
+      row.bar:SetColorTexture(r, g, b, 1)
+      row.bar:SetShown(row.item == cur)
+    end
+  end
+  dd:SetScript("OnClick", function()
+    if list:IsShown() then list:Hide() else dd:Refresh(); list:Show() end
+  end)
+  dd:HookScript("OnHide", function() list:Hide() end)
+  return dd
 end
 
 local function Print(msg)
@@ -218,27 +468,37 @@ local function ArmoryURL(full)
   return "https://worldofwarcraft.blizzard.com/en-us/forever/" .. region .. "/armory/character/" .. slug
 end
 
-StaticPopupDialogs["WHISPERINFO_ARMORY"] = {
-  text = "Armory link for %s - press Ctrl+C, then paste in your browser:",
-  button1 = CLOSE or "Close",
-  hasEditBox = true,
-  editBoxWidth = 420,
-  maxLetters = 0,
-  OnShow = function(self, url)
-    local eb = self.editBox or self.EditBox or (self.GetEditBox and self:GetEditBox())
-    if eb then
-      if eb.SetMaxLetters then eb:SetMaxLetters(0) end
-      if eb.SetMaxBytes then eb:SetMaxBytes(0) end
-      eb:SetText(url or ""); eb:SetFocus(); eb:HighlightText()
-    end
-  end,
-  EditBoxOnEscapePressed = function(eb) eb:GetParent():Hide() end,
-  EditBoxOnEnterPressed = function(eb) eb:GetParent():Hide() end,
-  timeout = 0, whileDead = true, hideOnEscape = true, preferredIndex = 3,
-}
-
+-- Copy box for an Armory link: the link is selected, so Ctrl+C copies it.
+local armoryBox
 local function ShowArmory(full)
-  StaticPopup_Show("WHISPERINFO_ARMORY", Display(full), nil, ArmoryURL(full))
+  if not armoryBox then
+    local w = FlatWindow("WhoAreYouPeopleArmory", 460, 112, "Armory link", "DIALOG")
+    w:SetPoint("CENTER", 0, 120)
+    w.text = Text(w, 12, LOOK.dim)
+    w.text:SetPoint("TOPLEFT", 14, -42)
+    w.text:SetPoint("RIGHT", -14, 0)
+    w.text:SetJustifyH("LEFT")
+    local eb = FlatInput(w)
+    eb:SetHeight(24)
+    eb:SetPoint("TOPLEFT", 14, -66)
+    eb:SetPoint("RIGHT", -14, 0)
+    eb:SetMaxLetters(0)
+    -- typing can't change the link: put it back and select it again
+    eb:SetScript("OnTextChanged", function(self, userInput)
+      if userInput then self:SetText(w.url); self:HighlightText() end
+    end)
+    eb:HookScript("OnEditFocusGained", function(self) self:HighlightText() end)
+    eb:SetScript("OnEnterPressed", function() w:Hide() end)
+    eb:SetScript("OnEscapePressed", function() w:Hide() end)
+    w.eb = eb
+    armoryBox = w
+  end
+  armoryBox.url = ArmoryURL(full)
+  armoryBox.text:SetText("Armory link for " .. Display(full) .. " - press Ctrl+C, then paste it in your browser.")
+  armoryBox.eb:SetText(armoryBox.url)
+  armoryBox:Show()
+  armoryBox.eb:SetFocus()
+  armoryBox.eb:HighlightText()
 end
 
 local function TagFor(e, full)
@@ -689,53 +949,40 @@ local function Invite(name)
 end
 
 local function CardButton(parent, text, w)
-  local b = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
-  b:SetSize(w or 84, 22)
-  b:SetText(text)
-  return b
+  return FlatButton(parent, text, w or 92, 22)
 end
 
 local function BuildCard()
-  card = CreateFrame("Frame", "WhoAreYouPeopleCard", UIParent, "BasicFrameTemplateWithInset")
-  card:SetSize(320, 372)
+  card = FlatWindow("WhoAreYouPeopleCard", 320, 392, "Who Are You People?", "DIALOG")
   card:SetPoint("CENTER", UIParent, "CENTER", 260, 40)
-  card:SetFrameStrata("DIALOG")
-  card:SetMovable(true); card:EnableMouse(true); card:SetClampedToScreen(true)
-  card:RegisterForDrag("LeftButton")
-  card:SetScript("OnDragStart", card.StartMoving)
-  card:SetScript("OnDragStop", card.StopMovingOrSizing)
-  tinsert(UISpecialFrames, "WhoAreYouPeopleCard")   -- Esc closes it
-
-  local title = card.TitleText or card.title
-  if not title then
-    title = card:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-    title:SetPoint("TOP", 0, -5)
-  end
-  title:SetText("Who Are You People?")
-  UseAccent(title, "text")
 
   card.icon = card:CreateTexture(nil, "ARTWORK")
   card.icon:SetSize(44, 44)
-  card.icon:SetPoint("TOPLEFT", 16, -34)
+  card.icon:SetPoint("TOPLEFT", 16, -42)
 
-  card.name = card:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+  card.name = Text(card, 16)
   card.name:SetPoint("TOPLEFT", card.icon, "TOPRIGHT", 10, -2)
   card.name:SetPoint("RIGHT", -14, 0)
   card.name:SetJustifyH("LEFT")
 
-  card.sub = card:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+  card.sub = Text(card, 12)
   card.sub:SetPoint("TOPLEFT", card.name, "BOTTOMLEFT", 0, -4)
   card.sub:SetPoint("RIGHT", -14, 0)
   card.sub:SetJustifyH("LEFT")
 
+  local rule = Fill(card, "ARTWORK", 1, 1, 1, LOOK.line)
+  rule:SetPoint("TOPLEFT", 14, -96); rule:SetPoint("TOPRIGHT", -14, -96); rule:SetHeight(1)
+
   card.rows = {}
-  local y = -92
-  for _, label in ipairs(CARD_ROWS) do
-    local l = card:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+  local y = -104
+  for i, label in ipairs(CARD_ROWS) do
+    local stripe = Fill(card, "BORDER", 0, 0, 0, i % 2 == 1 and 0.1 or 0.2)
+    stripe:SetPoint("TOPLEFT", 12, y + 3); stripe:SetPoint("TOPRIGHT", -12, y + 3); stripe:SetHeight(20)
+    local l = Text(card, 11, LOOK.dim)
     l:SetPoint("TOPLEFT", 18, y)
     l:SetWidth(84); l:SetJustifyH("LEFT")
     l:SetText(label)
-    local v = card:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    local v = Text(card, 11)
     v:SetPoint("TOPLEFT", 104, y)
     v:SetPoint("RIGHT", -16, 0)
     v:SetJustifyH("LEFT"); v:SetWordWrap(false)
@@ -743,13 +990,13 @@ local function BuildCard()
     y = y - 20
   end
 
-  card.status = card:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-  card.status:SetPoint("BOTTOMLEFT", 18, 64)
+  card.status = Text(card, 11, LOOK.dim)
+  card.status:SetPoint("BOTTOMLEFT", 18, 66)
   card.status:SetPoint("RIGHT", -16, 0)
   card.status:SetJustifyH("LEFT")
 
   local whisper = CardButton(card, WHISPER or "Whisper")
-  whisper:SetPoint("BOTTOMLEFT", 16, 36)
+  whisper:SetPoint("BOTTOMLEFT", 14, 40)
   whisper:SetScript("OnClick", function() SendTell(Display(card.full)) end)
 
   local invite = CardButton(card, INVITE or "Invite")
@@ -760,8 +1007,8 @@ local function BuildCard()
   armory:SetPoint("LEFT", invite, "RIGHT", 6, 0)
   armory:SetScript("OnClick", function() ShowArmory(card.full) end)
 
-  local refresh = CardButton(card, "Look up again", 132)
-  refresh:SetPoint("BOTTOMLEFT", 16, 12)
+  local refresh = CardButton(card, "Look up again", 143)
+  refresh:SetPoint("BOTTOMLEFT", 14, 12)
   refresh:SetScript("OnClick", function()
     if GetTime() - lastWho < 5 then
       card.status:SetText("/who needs a few seconds between lookups.")
@@ -771,7 +1018,7 @@ local function BuildCard()
     end
   end)
 
-  local roleBtn = CardButton(card, "Set role", 132)
+  local roleBtn = CardButton(card, "Set role", 143)
   roleBtn:SetPoint("LEFT", refresh, "RIGHT", 6, 0)
   roleBtn:SetScript("OnClick", function()
     local cur = DB.roles[card.full]
@@ -959,62 +1206,40 @@ local function BuildSettings()
   panel.name = "Who Are You People?"
   settingsPanel = panel
 
-  local title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+  ThemedBackground(panel)
+
+  local title = Text(panel, 18)
   title:SetPoint("TOPLEFT", 16, -16)
   title:SetText("Who Are You People?")
   UseAccent(title, "text")
-  local sub = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+  local sub = Text(panel, 11, LOOK.dim)
   sub:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -6)
   sub:SetText("Every feature has its own switch. Changes apply straight away.")
 
-  -- theme picker: left-click for the next theme, right-click for the previous one
-  local themeBtn = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
-  themeBtn:SetSize(190, 24)
-  themeBtn:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -24, -16)
-  themeBtn:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-  local themeLabel = panel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-  themeLabel:SetPoint("RIGHT", themeBtn, "LEFT", -8, 0)
-  themeLabel:SetText("Theme")
-  local function ShowTheme()
-    themeBtn:SetText(AccentHex() .. CurrentTheme().name .. "|r")
-  end
-  themeBtn:SetScript("OnClick", function(_, button)
-    local step = button == "RightButton" and -1 or 1
-    OPT.theme = THEMES[(CurrentTheme().index - 1 + step) % #THEMES + 1].name
+  local themeDD = Dropdown(panel, 190, THEMES, ThemeColor, CurrentTheme, function(t)
+    OPT.theme = t.name
     ApplyTheme()
     panel.UpdatePreview()
   end)
-  themeBtn:SetScript("OnEnter", function(self)
-    GameTooltip:SetOwner(self, "ANCHOR_BOTTOMRIGHT")
-    GameTooltip:AddLine("Theme")
-    GameTooltip:AddLine("Accent colours matching EllesmereUI's themes.", 1, 1, 1, true)
-    GameTooltip:AddLine("Left-click: next theme   Right-click: previous", 0.7, 0.7, 0.7)
-    GameTooltip:Show()
-  end)
-  themeBtn:SetScript("OnLeave", function() GameTooltip:Hide() end)
+  themeDD:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -24, -16)
+  local themeLabel = Text(panel, 12, LOOK.dim)
+  themeLabel:SetPoint("RIGHT", themeDD, "LEFT", -8, 0)
+  themeLabel:SetText("Theme")
 
   -- preview, fixed at the top so it stays in view while you scroll the switches
-  local head = panel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-  head:SetPoint("TOPLEFT", 18, -56)
+  local head = Text(panel, 13)
+  head:SetPoint("TOPLEFT", 18, -58)
   head:SetText("Preview")
-  local headSub = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+  local headSub = Text(panel, 11, LOOK.dim)
   headSub:SetPoint("LEFT", head, "RIGHT", 8, 0)
   headSub:SetText("updates as you click")
 
-  local box = CreateFrame("Frame", nil, panel, BackdropTemplateMixin and "BackdropTemplate" or nil)
-  box:SetPoint("TOPLEFT", 14, -72)
+  local box = CreateFrame("Frame", nil, panel)
+  box:SetPoint("TOPLEFT", 14, -76)
   box:SetPoint("RIGHT", panel, "RIGHT", -24, 0)
   box:SetHeight(6 * 20 + 16)
-  if box.SetBackdrop then
-    box:SetBackdrop({
-      bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-      edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-      tile = true, tileSize = 16, edgeSize = 14,
-      insets = { left = 3, right = 3, top = 3, bottom = 3 },
-    })
-    box:SetBackdropColor(0, 0, 0, 0.75)
-    box:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
-  end
+  Fill(box, "BACKGROUND", 0, 0, 0, 0.45):SetAllPoints()
+  Outline(box, LOOK.line)
   box.lines = {}
   for i = 1, 6 do
     local fs = box:CreateFontString(nil, "ARTWORK", ChatFontNormal and "ChatFontNormal" or "GameFontHighlight")
@@ -1025,13 +1250,31 @@ local function BuildSettings()
     box.lines[i] = fs
   end
 
-  -- switches, in a scrolling list under the preview
-  local scroll = CreateFrame("ScrollFrame", "WhoAreYouPeopleSettingsScroll", panel, "UIPanelScrollFrameTemplate")
+  -- switches, in a scrolling list under the preview: mouse wheel scrolls, with a slim bar on the right
+  local scroll = CreateFrame("ScrollFrame", nil, panel)
   scroll:SetPoint("TOPLEFT", box, "BOTTOMLEFT", 0, -8)
   scroll:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -30, 10)
   local content = CreateFrame("Frame", nil, scroll)
   content:SetSize(560, 10)
   scroll:SetScrollChild(content)
+  local thumb = Fill(panel, "ARTWORK", 1, 1, 1, 0.2)
+  thumb:SetWidth(3)
+  local function UpdateThumb()
+    local range, h = scroll:GetVerticalScrollRange(), scroll:GetHeight()
+    if range <= 0 or h <= 0 then thumb:Hide() return end
+    local th = math.max(24, h * h / (h + range))
+    thumb:ClearAllPoints()
+    thumb:SetPoint("TOPLEFT", scroll, "TOPRIGHT", 12, -(h - th) * scroll:GetVerticalScroll() / range)
+    thumb:SetHeight(th)
+    thumb:Show()
+  end
+  scroll:EnableMouseWheel(true)
+  scroll:SetScript("OnMouseWheel", function(self, delta)
+    local range = self:GetVerticalScrollRange()
+    self:SetVerticalScroll(math.max(0, math.min(range, self:GetVerticalScroll() - delta * 40)))
+  end)
+  scroll:SetScript("OnVerticalScroll", UpdateThumb)
+  scroll:SetScript("OnScrollRangeChanged", UpdateThumb)
 
   panel.boxes = {}
   local function Refresh()
@@ -1042,7 +1285,7 @@ local function BuildSettings()
       if enabled then cb:Enable() else cb:Disable() end
       cb.label:SetTextColor(enabled and 1 or 0.5, enabled and 1 or 0.5, enabled and 1 or 0.5)
     end
-    ShowTheme()
+    themeDD:Refresh()
     local lines = PreviewLines()
     for i, fs in ipairs(box.lines) do fs:SetText(lines[i] or "") end
     if panel.Layout then panel.Layout() end
@@ -1055,17 +1298,18 @@ local function BuildSettings()
 
   for _, section in ipairs(SECTIONS) do
     local hb = CreateFrame("Button", nil, content)
-    hb:SetSize(520, 20)
-    hb.icon = hb:CreateTexture(nil, "ARTWORK")
-    hb.icon:SetSize(14, 14)
-    hb.icon:SetPoint("LEFT", 2, 0)
-    hb.title = hb:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+    hb:SetSize(540, 22)
+    Fill(hb, "BACKGROUND", 0, 0, 0, 0.2):SetAllPoints()
+    Fill(hb, "HIGHLIGHT", 1, 1, 1, 0.05):SetAllPoints()
+    hb.icon = Text(hb, 14, LOOK.dim)
+    hb.icon:SetPoint("LEFT", 8, 0)
+    hb.icon:SetWidth(12)
+    hb.title = Text(hb, 13)
     hb.title:SetPoint("LEFT", hb.icon, "RIGHT", 6, 0)
     hb.title:SetText(section.title)
     UseAccent(hb.title, "text")
-    hb.count = hb:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+    hb.count = Text(hb, 11, LOOK.dim)
     hb.count:SetPoint("LEFT", hb.title, "RIGHT", 8, 0)
-    hb:SetHighlightTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight", "ADD")
     hb.section, hb.boxes = section, {}
     hb:SetScript("OnClick", function(self)
       DB.openSections[section.title] = not DB.openSections[section.title] or nil
@@ -1075,29 +1319,18 @@ local function BuildSettings()
 
     for _, item in ipairs(section.items) do
       local indent = item.indent or (PARENT[item.key] and 1 or 0)
-      local cb = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
-      cb:SetSize(24, 24)
-      cb.indent = indent
-      local text = cb.Text or cb.text
-      if not text then
-        text = cb:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-        text:SetPoint("LEFT", cb, "RIGHT", 4, 1)
-      end
-      text:SetText(item.label)
-      cb.label = text
-      cb:SetScript("OnClick", function(self)
+      local cb = Toggle(content, item.label, function(self)
         OPT[item.key] = self:GetChecked() and true or false
         if item.key == "minimap" and UpdateMinimapButton then UpdateMinimapButton() end
         Refresh()
       end)
+      cb.indent = indent
       panel.boxes[item.key] = cb
       hb.boxes[#hb.boxes + 1] = { key = item.key, cb = cb }
     end
   end
 
-  local defaults = CreateFrame("Button", nil, content, "UIPanelButtonTemplate")
-  defaults:SetSize(150, 24)
-  defaults:SetText("Restore defaults")
+  local defaults = FlatButton(content, "Restore defaults", 150, 24)
   defaults:SetScript("OnClick", function()
     for k, v in pairs(DEFAULTS) do OPT[k] = v end
     ApplyTheme()
@@ -1105,8 +1338,7 @@ local function BuildSettings()
     Refresh()
   end)
 
-  local reset = CreateFrame("Button", nil, content, "UIPanelButtonTemplate")
-  reset:SetSize(180, 24)
+  local reset = FlatButton(content, "", 180, 24)
   reset:SetPoint("LEFT", defaults, "RIGHT", 8, 0)
   reset:SetText("Forget all saved players")
   reset:SetScript("OnClick", function()
@@ -1119,7 +1351,7 @@ local function BuildSettings()
       local open = DB.openSections[hb.section.title]
       hb:ClearAllPoints()
       hb:SetPoint("TOPLEFT", 4, y)
-      hb.icon:SetTexture(open and "Interface\\Buttons\\UI-MinusButton-Up" or "Interface\\Buttons\\UI-PlusButton-Up")
+      hb.icon:SetText(open and "-" or "+")
       local on = 0
       for _, b in ipairs(hb.boxes) do if OPT[b.key] then on = on + 1 end end
       hb.count:SetText(on .. " of " .. #hb.boxes .. " on")
@@ -1278,8 +1510,9 @@ local function RefreshMessenger()
       btn.full = item.full
       btn.name:SetText(icon .. " " .. ClassColored(e, Display(item.full)))
       local unread = item.c.unread or 0
-      btn.unread:SetText(unread > 0 and ("|cffffd100" .. unread .. "|r") or "")
-      if item.full == selectedConvo then btn.sel:Show() else btn.sel:Hide() end
+      btn.unread:SetText(unread > 0 and (AccentHex() .. unread .. "|r") or "")
+      btn.sel:SetShown(item.full == selectedConvo)
+      btn.selBar:SetShown(item.full == selectedConvo)
       btn:Show()
     else
       btn:Hide()
@@ -1308,57 +1541,51 @@ local function RefreshMessenger()
 end
 
 local function BuildMessenger()
-  local m = CreateFrame("Frame", "WhoAreYouPeopleMessenger", UIParent, "BasicFrameTemplateWithInset")
+  local m = FlatWindow("WhoAreYouPeopleMessenger", 600, 400, "Whispers", "HIGH")
   messenger = m
-  m:SetSize(600, 400)
   if DB.messengerPos then
     local p = DB.messengerPos
     m:SetPoint(p[1], UIParent, p[3], p[4], p[5])
   else
     m:SetPoint("CENTER", UIParent, "CENTER", -120, 60)
   end
-  m:SetFrameStrata("HIGH")
-  m:SetMovable(true); m:EnableMouse(true); m:SetClampedToScreen(true)
-  m:RegisterForDrag("LeftButton")
-  m:SetScript("OnDragStart", m.StartMoving)
   m:SetScript("OnDragStop", function(self)
     self:StopMovingOrSizing()
     DB.messengerPos = { self:GetPoint(1) }
     DB.messengerPos[2] = nil
   end)
-  tinsert(UISpecialFrames, "WhoAreYouPeopleMessenger")
-  local title = m.TitleText or m.title
-  if not title then
-    title = m:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-    title:SetPoint("TOP", 0, -5)
-  end
-  title:SetText("Whispers")
-  UseAccent(title, "text")
 
-  -- left: conversations
-  local divider = m:CreateTexture(nil, "ARTWORK")
-  UseAccent(divider, "solid", 0.5)
-  divider:SetSize(1, 352)
-  divider:SetPoint("TOPLEFT", 182, -32)
+  -- left: conversations, on a darker sidebar
+  local sidebar = Fill(m, "BORDER", 0, 0, 0, LOOK.shade)
+  sidebar:SetPoint("TOPLEFT", 1, -29)
+  sidebar:SetPoint("BOTTOMLEFT", 1, 1)
+  sidebar:SetWidth(181)
+  local divider = Fill(m, "ARTWORK", 1, 1, 1, LOOK.line)
+  divider:SetPoint("TOPLEFT", sidebar, "TOPRIGHT")
+  divider:SetPoint("BOTTOMLEFT", sidebar, "BOTTOMRIGHT")
+  divider:SetWidth(1)
 
   m.buttons = {}
   for i = 1, MAX_LIST do
     local b = CreateFrame("Button", nil, m)
-    b:SetSize(166, 22)
-    b:SetPoint("TOPLEFT", 12, -30 - (i - 1) * 24)
+    b:SetSize(181, 24)
+    b:SetPoint("TOPLEFT", 1, -30 - (i - 1) * 24)
     b:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-    b:SetHighlightTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight", "ADD")
-    b.sel = b:CreateTexture(nil, "BACKGROUND")
+    Fill(b, "BACKGROUND", 0, 0, 0, i % 2 == 1 and 0.1 or 0.2):SetAllPoints()
+    Fill(b, "HIGHLIGHT", 1, 1, 1, 0.05):SetAllPoints()
+    b.sel = Fill(b, "BORDER", 1, 1, 1, 1)
     b.sel:SetAllPoints()
-    b.sel:SetTexture("Interface\\QuestFrame\\UI-QuestLogTitleHighlight")
-    UseAccent(b.sel, "vertex", 0.45)
-    b.sel:Hide()
-    b.name = b:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    b.name:SetPoint("LEFT", 4, 0)
-    b.name:SetPoint("RIGHT", -24, 0)
+    UseAccent(b.sel, "solid", 0.14)
+    b.selBar = Fill(b, "ARTWORK", 1, 1, 1, 1)
+    b.selBar:SetPoint("TOPLEFT"); b.selBar:SetPoint("BOTTOMLEFT"); b.selBar:SetWidth(2)
+    UseAccent(b.selBar, "solid", 1)
+    b.sel:Hide(); b.selBar:Hide()
+    b.name = Text(b, 12)
+    b.name:SetPoint("LEFT", 10, 0)
+    b.name:SetPoint("RIGHT", -28, 0)
     b.name:SetJustifyH("LEFT"); b.name:SetWordWrap(false)
-    b.unread = b:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    b.unread:SetPoint("RIGHT", -4, 0)
+    b.unread = Text(b, 11)
+    b.unread:SetPoint("RIGHT", -8, 0)
     b:SetScript("OnClick", function(self, button)
       if not self.full then return end
       if button == "RightButton" then
@@ -1381,28 +1608,27 @@ local function BuildMessenger()
   end
 
   -- right: header, messages, reply box
-  m.who = m:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-  m.who:SetPoint("TOPLEFT", 194, -32)
-  m.sub = m:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+  m.who = Text(m, 15)
+  m.who:SetPoint("TOPLEFT", 196, -40)
+  m.sub = Text(m, 11, LOOK.dim)
   m.sub:SetPoint("TOPLEFT", m.who, "BOTTOMLEFT", 0, -4)
   m.sub:SetPoint("RIGHT", -150, 0)
   m.sub:SetJustifyH("LEFT"); m.sub:SetWordWrap(false)
 
-  m.inviteBtn = CreateFrame("Button", nil, m, "UIPanelButtonTemplate")
-  m.inviteBtn:SetSize(64, 22)
-  m.inviteBtn:SetPoint("TOPRIGHT", -14, -32)
-  m.inviteBtn:SetText(INVITE or "Invite")
+  m.inviteBtn = FlatButton(m, INVITE or "Invite", 64, 22)
+  m.inviteBtn:SetPoint("TOPRIGHT", -14, -40)
   m.inviteBtn:SetScript("OnClick", function() if selectedConvo then Invite(Display(selectedConvo)) end end)
-  m.cardBtn = CreateFrame("Button", nil, m, "UIPanelButtonTemplate")
-  m.cardBtn:SetSize(64, 22)
-  m.cardBtn:SetPoint("RIGHT", m.inviteBtn, "LEFT", -4, 0)
-  m.cardBtn:SetText("Card")
+  m.cardBtn = FlatButton(m, "Card", 64, 22)
+  m.cardBtn:SetPoint("RIGHT", m.inviteBtn, "LEFT", -6, 0)
+
+  local headRule = Fill(m, "ARTWORK", 1, 1, 1, LOOK.line)
+  headRule:SetPoint("TOPLEFT", 183, -78); headRule:SetPoint("TOPRIGHT", -1, -78); headRule:SetHeight(1)
   m.cardBtn:SetScript("OnClick", function() if selectedConvo then ShowCard(selectedConvo) end end)
 
   local mf = CreateFrame("ScrollingMessageFrame", nil, m)
   m.messages = mf
-  mf:SetPoint("TOPLEFT", 194, -76)
-  mf:SetPoint("BOTTOMRIGHT", -16, 44)
+  mf:SetPoint("TOPLEFT", 196, -86)
+  mf:SetPoint("BOTTOMRIGHT", -16, 48)
   mf:SetFontObject(ChatFontNormal or GameFontHighlight)
   mf:SetJustifyH("LEFT")
   mf:SetFading(false)
@@ -1414,16 +1640,15 @@ local function BuildMessenger()
     if delta > 0 then self:ScrollUp() else self:ScrollDown() end
   end)
 
-  m.empty = m:CreateFontString(nil, "OVERLAY", "GameFontDisable")
+  m.empty = Text(m, 13, LOOK.dim)
   m.empty:SetPoint("CENTER", 90, 0)
   m.empty:SetText("No whispers yet.")
 
-  local eb = CreateFrame("EditBox", nil, m, "InputBoxTemplate")
+  local eb = FlatInput(m)
   m.reply = eb
-  eb:SetHeight(20)
-  eb:SetPoint("BOTTOMLEFT", 200, 14)
-  eb:SetPoint("BOTTOMRIGHT", -18, 14)
-  eb:SetAutoFocus(false)
+  eb:SetHeight(26)
+  eb:SetPoint("BOTTOMLEFT", 194, 12)
+  eb:SetPoint("BOTTOMRIGHT", -14, 12)
   eb:SetMaxLetters(255)
   eb:SetScript("OnEnterPressed", function(self)
     local text = strtrim(self:GetText() or "")
@@ -1434,11 +1659,11 @@ local function BuildMessenger()
     self:ClearFocus()
   end)
   eb:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
-  local hint = eb:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-  hint:SetPoint("LEFT", 6, 0)
+  local hint = Text(eb, 11, LOOK.dim)
+  hint:SetPoint("LEFT", 9, 0)
   hint:SetText("Type a reply and press Enter")
-  eb:SetScript("OnEditFocusGained", function() hint:Hide() end)
-  eb:SetScript("OnEditFocusLost", function(self) if (self:GetText() or "") == "" then hint:Show() end end)
+  eb:HookScript("OnEditFocusGained", function() hint:Hide() end)
+  eb:HookScript("OnEditFocusLost", function(self) if (self:GetText() or "") == "" then hint:Show() end end)
 
   m:SetScript("OnShow", RefreshMessenger)
   m:Hide()

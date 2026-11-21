@@ -12,7 +12,7 @@ The name comes from the SpongeBob *"Who are you people?"* meme, which is exactly
 - **Spam flag:** greys out or hides likely gold-seller whispers from strangers.
 - **Armory link:** one click gives you the player's Forever Armory page to copy into your browser.
 - **Settings with live preview:** every feature has its own on/off switch, in collapsible sections. Open them with `/wi config` or the minimap button.
-- **Themes:** pick an accent colour matching EllesmereUI's themes, including Horde, Alliance, Midnight and Class Colored.
+- **EllesmereUI-style look:** flat dark windows with thin borders, in themes matching EllesmereUI's (Horde, Alliance, Midnight, Class Colored and more). Each theme has its own accent colour and background tint.
 - **Memory:** everything it learns is saved, so people who whisper you again show their full tag straight away.
 
 ## Installing
@@ -76,7 +76,7 @@ Click `[who]` on any whisper, or type `/wi Name`, to open a window with everythi
 
 ## Whispers window
 
-The Whispers window keeps every whisper conversation in one Blizzard-style window, saved between sessions. Open it by shift-clicking (or middle-clicking) the minimap button, or with `/wi whispers` (short: `/wi w`).
+The Whispers window keeps every whisper conversation in one window, saved between sessions. Open it by shift-clicking (or middle-clicking) the minimap button, or with `/wi whispers` (short: `/wi w`).
 
 - **Conversation list (left):** everyone you've whispered with, newest first, with class icon, class-coloured name and a gold unread count. Click a name to open the conversation. Right-click it to remove that conversation.
 - **Conversation (right):** time-stamped messages from both sides. Item links stay clickable, and the mouse wheel scrolls back through up to 150 messages per person.
@@ -98,11 +98,11 @@ Battle.net whispers still appear only in normal chat.
 
 Every feature has its own on/off switch. Open the settings with `/wi config`, a left-click on the minimap button, or Game Menu → Options → AddOns → Who Are You People?. Changes apply straight away.
 
-- **Preview:** sample chat lines at the top redraw every time you tick a box, so you see the result before closing the window.
+- **Preview:** sample chat lines at the top redraw every time you flip a switch, so you see the result before closing the window.
 - **Sections:** click a section header's **+** / **−** to open or close it. Closed headers show a count such as *5 of 9 on*. The page remembers which sections you leave open.
 - **Main switches:** the first switch in a section turns that whole feature off. The indented switches under it grey out but keep their state, so turning the main switch back on restores your setup.
 - **Buttons:** **Restore defaults** puts every switch back, and **Forget all saved players** clears the addon's memory.
-- **Theme:** the button at the top right picks the accent colour used for the addon name in chat, window titles, section headers and the selected conversation. Left-click for the next theme, right-click for the previous one. The themes match EllesmereUI's: Who Are You People? (green, the default), EllesmereUI, EllesmereUI Forever, Horde, Alliance, Faction (Auto), Midnight, Dark and Class Colored.
+- **Theme:** the dropdown at the top right sets the look of every Who Are You People? window: the player card, the Whispers window, the Armory copy box and this settings page. Each theme has its own accent colour and background tint. The themes match EllesmereUI's: Who Are You People? (green, the default), EllesmereUI, EllesmereUI Forever, Horde, Alliance, Faction (Auto), Midnight, Dark and Class Colored.
 
 | Section | Switches |
 |---|---|
@@ -199,6 +199,7 @@ Newest changes first.
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.2.0 | Nov 21, 2026 | New EllesmereUI-style look for every window: flat dark panels, thin borders, on/off switches in settings, and a new Armory copy box. Each theme has its own background tint. The theme picker is now a dropdown. Uses EllesmereUI's font when it is installed. |
 | 2.1.0 | Nov 21, 2026 | Themes: pick an accent colour matching EllesmereUI's themes from the top of the settings page. |
 | 2.0.1 | Nov 21, 2026 | Minimap button shows the addon icon instead of the green question mark. |
 | 2.0.0 | Nov 21, 2026 | Renamed from WhisperInfo to Who Are You People?. New folder name `WhoAreYouPeople` and new slash command `/wayp` (`/wi` still works). Addon icon in the AddOns list. |

@@ -2,10 +2,17 @@ ADDON   := WhoAreYouPeople
 FILES   := $(ADDON).toc $(ADDON).lua icon.tga
 VERSION := $(shell sed -n 's/^\#\# Version: *//p' $(ADDON).toc | tr -d '\r')
 ZIP     := release/$(ADDON)-$(VERSION).zip
+LUA     ?= lua
+LUAC    ?= luac
 
-.PHONY: release clean version
+.PHONY: release test clean version
 
-release: $(ZIP)
+release: test $(ZIP)
+
+# Syntax check, then load the addon in a fake WoW environment and fire every handler.
+test:
+	$(LUAC) -p $(ADDON).lua
+	$(LUA) tests/smoke.lua $(ADDON).lua
 
 # Stage under a folder named after the addon so the zip extracts to Interface\AddOns\WhoAreYouPeople\.
 $(ZIP): $(FILES)
