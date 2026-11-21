@@ -51,11 +51,11 @@ Whispers from strangers that look like gold sellers are greyed out with a **[lik
 - Never flags friends, Battle.net friends, guildmates or group members
 - Click **[not spam]** to clear a real player for good
 
-### Themes
-Every window has a flat, dark EllesmereUI-style look, in a theme that matches EllesmereUI's: EllesmereUI, EllesmereUI Forever, Horde, Alliance, Faction (Auto), Midnight, Dark or Class Colored. Each theme has its own accent colour and background tint. Pick one from the dropdown in settings and it changes straight away. EllesmereUI doesn't need to be installed, but its font is used when it is.
+### UI styles
+Pick the look that matches the rest of your UI. There are four UI styles matching EllesmereUI's: **WoW Forever** (the game's own Forever windows, the default), **EllesmereUI** (flat and dark), **Classic WoW UI** (the original vanilla frames and buttons) and **Blizzard (Retail)**. On the Forever client, Blizzard (Retail) still draws Forever's frame art for now. Changing the style reloads the UI, just like EllesmereUI. EllesmereUI doesn't need to be installed, but the flat style uses its font when it is.
 
 ### Settings with live preview
-Every feature has its own on/off switch, grouped into collapsible sections. Sample chat lines at the top redraw as you flip switches, so you see exactly what changes. Main switches turn a whole feature off while keeping your sub-settings, and a **Restore defaults** button puts everything back.
+Every feature has its own on/off switch, grouped into collapsible sections. Sample chat lines at the top redraw as you change settings, so you see exactly what changes. Main switches turn a whole feature off while keeping your sub-settings, and a **Restore defaults** button puts everything back.
 
 ### Minimap button
 - **Left-click:** settings

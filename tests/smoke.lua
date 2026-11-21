@@ -1,8 +1,9 @@
 -- Smoke test: load the addon against a fake WoW API, build every window,
 -- and fire every script handler to catch Lua runtime errors in our code.
 -- It can't check how things look or that the real game API behaves as faked.
--- Usage: lua tests/smoke.lua WhoAreYouPeople.lua   (VERBOSE=1 for chat output)
-local addonFile = arg[1]
+-- Usage: lua tests/smoke.lua WhoAreYouPeople.lua [style]   (VERBOSE=1 for chat output)
+-- style is a saved UI style (forever, eui, classic, blizzard), as if picked before a reload.
+local addonFile, style = arg[1], arg[2]
 local VERBOSE = os.getenv("VERBOSE")
 
 local objects = {}
@@ -45,7 +46,13 @@ local function NewObject(kind, name)
   return setmetatable(o, { __index = function(_, k)
     if methods[k] then return methods[k] end
     if NUMERIC[k] then return function() return NUMERIC[k] end end
-    if type(k) == "string" and k:match("^%u") then return function() end end   -- other widget methods are no-ops
+    -- other widget methods are no-ops; capitalised fields such as TitleText stay nil
+    if type(k) == "string" and (k:match("^[SG]et%u") or k:match("^Is%u") or k:match("^Has%u")
+      or k:match("^(Enable)") or k:match("^(Disable)") or k:match("^Register") or k:match("^Unregister")
+      or k:match("^Clear") or k:match("^Add") or k:match("^Create") or k:match("^Start") or k:match("^Stop")
+      or k:match("^Scroll") or k:match("^Highlight") or k:match("^Raise") or k:match("^Lower")) then
+      return function() end
+    end
     return nil
   end })
 end
@@ -56,6 +63,12 @@ function CreateFrame(kind, name, parent, template)
   if name then _G[name] = o end
   if template and template:find("BasicFrameTemplate") then
     o.TitleText = NewObject("FontString")
+  elseif template == "ButtonFrameTemplate" then
+    o.TitleContainer = { TitleText = NewObject("FontString") }
+  elseif template == "UICheckButtonTemplate" then
+    o.Text = NewObject("FontString")
+  elseif template == "UIPanelButtonTemplate" then
+    o._fs = NewObject("FontString")   -- the template's own button label
   end
   return o
 end
@@ -118,6 +131,12 @@ math.atan2 = math.atan2 or math.atan
 unpack = unpack or table.unpack
 getn = function(t) return #t end
 function issecretvalue() return false end
+BackdropTemplateMixin = {}
+function Mixin(o, m) for k, v in pairs(m) do o[k] = v end return o end
+function StaticPopup_Show() end
+function ReloadUI() end
+function ButtonFrameTemplate_HidePortrait() end
+function ButtonFrameTemplate_HideButtonBar() end
 time, date = os.time, os.date
 WorldFrame = NewObject("Frame", "WorldFrame")
 function GetQuestDifficultyColor() return { r = 1, g = 1, b = 0 } end
@@ -155,7 +174,8 @@ local function FireAll(ev, ...)
   for _, o in ipairs(snapshot) do Fire(o, ev, ...) end
 end
 
-print("== load")
+print("== load" .. (style and (" (UI style: " .. style .. ")") or ""))
+if style then rawset(_G, "WhisperInfoDB", { options = { uiStyle = style } }) end
 local chunk = assert(loadfile(addonFile))
 try("load", chunk, "WhoAreYouPeople")
 
