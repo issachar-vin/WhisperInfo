@@ -32,7 +32,7 @@ Click [who] or type `/wi Name` to see everything the game can tell you about a p
 The card has buttons to **Whisper**, **Invite**, **Armory**, **Look up again** and **Set role**.
 
 ### Whispers window
-Every whisper conversation in one Blizzard-style window, saved between sessions.
+Every whisper conversation in one window, saved between sessions.
 
 - A conversation list with class icons, class-coloured names and unread counts
 - Time-stamped messages with clickable item links, and up to 150 messages of history per person
@@ -52,10 +52,10 @@ Whispers from strangers that look like gold sellers are greyed out with a **[lik
 - Click **[not spam]** to clear a real player for good
 
 ### Themes
-Pick an accent colour that matches EllesmereUI's themes: EllesmereUI, EllesmereUI Forever, Horde, Alliance, Faction (Auto), Midnight, Dark or Class Colored. It colours the addon name in chat, window titles, section headers and the selected conversation, and changes straight away. EllesmereUI doesn't need to be installed.
+Every window has a flat, dark EllesmereUI-style look, in a theme that matches EllesmereUI's: EllesmereUI, EllesmereUI Forever, Horde, Alliance, Faction (Auto), Midnight, Dark or Class Colored. Each theme has its own accent colour and background tint. Pick one from the dropdown in settings and it changes straight away. EllesmereUI doesn't need to be installed, but its font is used when it is.
 
 ### Settings with live preview
-Every feature has its own on/off switch, grouped into collapsible sections. Sample chat lines at the top redraw as you tick boxes, so you see exactly what changes. Main switches turn a whole feature off while keeping your sub-settings, and a **Restore defaults** button puts everything back.
+Every feature has its own on/off switch, grouped into collapsible sections. Sample chat lines at the top redraw as you flip switches, so you see exactly what changes. Main switches turn a whole feature off while keeping your sub-settings, and a **Restore defaults** button puts everything back.
 
 ### Minimap button
 - **Left-click:** settings
