@@ -141,6 +141,7 @@ local function OnWhisper(_, event, msg, sender, ...)
     if ns.OPT.autoWho and NeedsWho(e) then QueueWho(full) end
     local spam = ns.OPT.spamFlag and ns.SpamReason(e, full, msg)
     if not spam and ns.RecordWhisper then ns.RecordWhisper(full, "them", msg) end
+    if not spam and ns.OPT.cardOnWhisper then ns.ShowCard(full) end
   end
   e = e or ns.DB.players[full]
   if On("whisperHideChat") and not (ns.OPT.spamFlag and ns.SpamReason(e, full, msg)) then return true end
@@ -182,6 +183,7 @@ local function OnBNWhisper(_, event, msg, sender, ...)
     e.class = e.class or g.className
     NoteWhisper(e)
     if ns.OPT.autoWho and NeedsWho(e) then QueueWho(full) end
+    if ns.OPT.cardOnWhisper then ns.ShowCard(full) end   -- the character they're playing
   end
   if hide then return true end
   if not On("tagBN") then return false end

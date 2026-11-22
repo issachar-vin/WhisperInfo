@@ -47,6 +47,13 @@ local function BNCharacter(acct)
   return FullName(realm ~= "" and (g.characterName .. "-" .. realm) or g.characterName)
 end
 
+-- icon in front of a conversation's name: Battle.net, or the character's class
+local function ConvoIcon(key)
+  if IsBN(key) then return BN_ICON end
+  local e = ns.DB.players[key] or {}
+  return e.classFile and (ClassIcon(e.classFile, 14) or "") or ""
+end
+
 -- name shown for a conversation: a character, or a Battle.net friend's BattleTag name
 local function ConvoName(key)
   if IsBN(key) then return BN_COLOR .. (key:match("^BN:([^#]+)") or key:sub(4)) .. "|r" end
@@ -78,10 +85,8 @@ local function RefreshMessenger()
   for i, btn in ipairs(messenger.buttons) do
     local item = i <= messenger.visibleRows and list[i]
     if item then
-      local e = ns.DB.players[item.full] or {}
-      local icon = IsBN(item.full) and BN_ICON or (e.classFile and (ClassIcon(e.classFile, 14) or "") or "")
       btn.full = item.full
-      btn.name:SetText(icon .. " " .. ConvoName(item.full))
+      btn.name:SetText(ConvoIcon(item.full) .. " " .. ConvoName(item.full))
       local unread = item.c.unread or 0
       btn.unread:SetText(unread > 0 and (AccentHex() .. unread .. "|r") or "")
       for _, t in ipairs(btn.sel) do t:SetShown(item.full == selectedConvo) end
@@ -289,7 +294,17 @@ ns.RecordWhisper = function(full, from, msg)
   end
   if open then
     RefreshMessenger()
-  elseif from == "them" and On("whisperAutoOpen") then
-    OpenMessenger(full)
+  elseif from == "them" then
+    local notify = On("whisperWindow") and ns.OPT.whisperNotify
+    if notify == "window" then
+      OpenMessenger(full)
+    elseif notify == "toast" then
+      ns.ShowToast(full, msg)
+    end
   end
 end
+
+-- shared with the other files
+ns.OpenMessenger = OpenMessenger
+ns.ConvoName = ConvoName
+ns.ConvoIcon = ConvoIcon

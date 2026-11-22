@@ -55,6 +55,11 @@ f:SetScript("OnEvent", function(_, event, arg1, arg2, ...)
     ns.DB.options = ns.DB.options or {}
     ns.OPT = ns.DB.options
     if ns.DB.classIcons ~= nil then ns.OPT.classIcons = ns.DB.classIcons; ns.DB.classIcons = nil end  -- old setting
+    -- 3.3: the "open the window on a new whisper" switch became the whisperNotify choice
+    if ns.OPT.whisperAutoOpen ~= nil then
+      if ns.OPT.whisperNotify == nil then ns.OPT.whisperNotify = ns.OPT.whisperAutoOpen and "window" or "none" end
+      ns.OPT.whisperAutoOpen = nil
+    end
     for k, v in pairs(DEFAULTS) do
       if ns.OPT[k] == nil then ns.OPT[k] = v end
     end
@@ -160,12 +165,15 @@ SlashCmdList.WHISPERINFO = function(msg)
     Print("/wi icons - turn class icons in chat on/off")
     Print("/wi minimap - show/hide the minimap button")
     Print("/wi whispers - open or close the whisper window")
+    Print("/wi toast - show or hide the box that places whisper toasts")
     Print("/wi notspam Name - never flag Name as spam")
     Print("/wi reset - forget everyone")
   elseif lower == "config" or lower == "settings" or lower == "options" then
     OpenSettings()
   elseif lower == "whispers" or lower == "w" then
     ns.ToggleMessenger()
+  elseif lower == "toast" then
+    ns.ToggleToastAnchor()
   elseif lower == "minimap" then
     ns.OPT.minimap = not ns.OPT.minimap
     ns.UpdateMinimapButton()
