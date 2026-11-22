@@ -29,7 +29,7 @@ Click [who] or type `/wi Name` to see everything the game can tell you about a p
 - Your friend note or their guild note
 - How many times they've whispered you, when they last did, and when they first did
 
-The card has buttons to **Whisper**, **Invite**, **Armory**, **Look up again** and **Set role**.
+The card has buttons to **Whisper**, **Invite**, **Armory**, **Look up again** and **Set role**. Turn on *Open the player card when someone whispers you* to have it pop up by itself.
 
 ### Whispers window
 Every whisper conversation in one window, saved between sessions, Battle.net whispers included. Move it and resize it from the corner; it remembers both.
@@ -38,7 +38,8 @@ Every whisper conversation in one window, saved between sessions, Battle.net whi
 - Time-stamped messages with clickable item links, and up to 150 messages of history per person
 - A header showing their level, class, guild and zone, with Card and Invite buttons
 - A reply box: type and press Enter to whisper back (as a Battle.net whisper for Battle.net friends)
-- Optional: pop the window open on new whispers, or take whispers out of normal chat entirely
+- On a new whisper: do nothing, open the window, or show a **toast** you can click to open it. Pick how long toasts stay and where they appear (in Edit Mode or with `/wi toast`)
+- Optional: take whispers out of normal chat entirely
 
 ### Class and role icons
 - **Class icons** in front of messages in whispers, say/yell, guild/officer, party/raid/instance and General/Trade/LFG channels. Each chat type has its own switch.
@@ -75,6 +76,7 @@ All commands start with `/wi` (or `/wayp`). Names can be typed in lowercase.
 | `/wi config` | Opens the settings window |
 | `/wi Name` | Opens the player card and looks them up |
 | `/wi whispers` (`/wi w`) | Opens or closes the Whispers window |
+| `/wi toast` | Shows or hides the box that places whisper toasts |
 | `/wi list` | The last 10 people who whispered you |
 | `/wi armory Name` | Shows that player's Armory link |
 | `/wi role tank` / `heal` / `dps` / `clear` | Sets your target's party role (add a name, or `me`) |

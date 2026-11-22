@@ -151,6 +151,11 @@ C_BattleNet = {
 function BNGetNumFriends() return 1 end
 function BNSendWhisper() end
 function HideUIPanel(f) f:Hide() end
+-- the game's Edit Mode: callbacks are kept so the test can enter and leave it
+local callbacks = {}
+EventRegistry = { RegisterCallback = function(self, event, fn) callbacks[event] = fn end }
+EditModeManagerFrame = NewObject("Frame", "EditModeManagerFrame")
+C_Timer.NewTimer = function() return { Cancel = function() end } end
 BackdropTemplateMixin = {}
 function Mixin(o, m) for k, v in pairs(m) do o[k] = v end return o end
 function StaticPopup_Show() end
@@ -195,7 +200,8 @@ local function FireAll(ev, ...)
 end
 
 print("== load" .. (style and (" (UI style: " .. style .. ")") or ""))
-if style then rawset(_G, "WhisperInfoDB", { options = { uiStyle = style } }) end
+-- with a style, start from saved settings that still have the pre-3.3 "open window on whisper" switch
+if style then rawset(_G, "WhisperInfoDB", { options = { uiStyle = style, whisperAutoOpen = true } }) end
 local dir = tocFile:match("^(.*[/\\])") or ""
 local ns = {}
 for raw in io.lines(tocFile) do
@@ -221,9 +227,28 @@ print("== whispers, in and out, from a character and a Battle.net friend")
 local function RunFilters(event, ...)
   for _, fn in ipairs(chatFilters[event] or {}) do try("filter " .. event, fn, nil, event, ...) end
 end
+local function check(ok, what) if not ok then failures = failures + 1; print("FAIL " .. what) end end
+local opt = WhisperInfoDB.options
+if style then
+  check(opt.whisperNotify == "window" and opt.whisperAutoOpen == nil, "the old open-on-whisper switch was not moved to whisperNotify")
+end
+-- new whispers with the Whispers window closed: toast mode, and the card opens
+WhoAreYouPeopleMessenger:Hide()
+if WhoAreYouPeopleCard then WhoAreYouPeopleCard:Hide() end
+opt.whisperNotify, opt.cardOnWhisper = "toast", true
 -- chat event args: msg, sender, then 7 more before lineID (arg11), guid (arg12) and bnSenderID (arg13)
 RunFilters("CHAT_MSG_WHISPER", "lf healer for Deadmines?", "Addled Ark", "", "", "", "", 0, 0, "", 0, 101, nil)
+local t = rawget(_G, "WhoAreYouPeopleToast")
+check(t and t._shown and t.full == "Addled Ark", "a whisper did not show a toast")
+check(WhoAreYouPeopleCard and WhoAreYouPeopleCard._shown, "a whisper did not open the player card")
 RunFilters("CHAT_MSG_BN_WHISPER", "want to run Deadmines?", "Friend", "", "", "", "", 0, 0, "", 0, 102, nil, 7)
+check(t and t.full == "BN:Friend#1234" and t.more._text == "+1 more", "a second whisper did not replace the toast and count the first")
+-- Edit Mode shows the toast anchor, leaving it hides it
+callbacks["EditMode.Enter"]()
+local a = rawget(_G, "WhoAreYouPeopleToastAnchor")
+check(a and a._shown, "Edit Mode did not show the toast anchor")
+callbacks["EditMode.Exit"]()
+check(a and not a._shown, "leaving Edit Mode did not hide the toast anchor")
 FireAll("OnEvent", "CHAT_MSG_WHISPER_INFORM", "hello there", "Addled Ark")
 FireAll("OnEvent", "CHAT_MSG_BN_WHISPER_INFORM", "sure, inviting", "Friend", "", "", "", "", 0, 0, "", 0, 103, nil, 7)
 local convos = WhisperInfoDB and WhisperInfoDB.convos or {}

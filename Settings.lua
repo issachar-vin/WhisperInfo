@@ -79,6 +79,8 @@ end
 ---------------------------------------------------------------- settings panel
 -- Every feature has its own switch. Indented switches belong to the one above
 -- them and are greyed out while that one is off.
+local function ToastOn() return ns.OPT.whisperNotify == "toast" end
+
 local SECTIONS = {
   { title = "Whisper tag", items = {
     { key = "whisperTag",    label = "Show a tag in front of whispers" },
@@ -96,6 +98,7 @@ local SECTIONS = {
     { key = "whoCard",       label = "Clicking [who] opens the player card" },
     { key = "printLookups",  label = "Print a chat line when a lookup finishes" },
     { key = "hideWhoLines",  label = "Hide the raw /who lines for lookups the addon makes" },
+    { key = "cardOnWhisper", label = "Open the player card when someone whispers you" },
   }},
   { title = "Class icons", items = {
     { key = "classIcons",    label = "Show class icons in chat" },
@@ -118,7 +121,19 @@ local SECTIONS = {
   }},
   { title = "Whisper window", items = {
     { key = "whisperWindow",   label = "Keep whispers in the Whispers window" },
-    { key = "whisperAutoOpen", label = "Open the window when someone whispers you" },
+    { key = "whisperNotify",   label = "When someone whispers you", choices = {
+        { value = "none",   name = "Do nothing" },
+        { value = "window", name = "Open the Whispers window" },
+        { value = "toast",  name = "Show a toast" },
+      } },
+    { key = "toastDuration",   label = "Toast stays for", indent = 2, enabledIf = ToastOn, choices = {
+        { value = 4,  name = "4 seconds" },
+        { value = 8,  name = "8 seconds" },
+        { value = 15, name = "15 seconds" },
+        { value = 0,  name = "Until clicked" },
+      } },
+    { key = "moveToast",       button = "Move the toast", indent = 2, enabledIf = ToastOn,
+      onClick = function() ns.ToggleToastAnchor() end },
     { key = "whisperHideChat", label = "Take whispers out of the normal chat window" },
   }},
   { title = "Other", items = {
@@ -158,6 +173,48 @@ local function BuildOptionsStub(open)
   elseif InterfaceOptions_AddCategory then
     InterfaceOptions_AddCategory(stub)
   end
+end
+
+-- One row of the settings list: a switch, a dropdown of choices, or a button.
+-- Every row has Refresh, Enable, Disable and .label, so the list treats them alike.
+local function MakeRow(content, item, onChange)
+  local row
+  if item.choices then
+    row = CreateFrame("Frame", nil, content)
+    row:SetSize(470, 26)
+    row.label = ns.UI.Text(row, 12)
+    row.label:SetPoint("LEFT", 4, 0)
+    row.label:SetText(item.label)
+    local dd = ns.UI.Dropdown(row, 190, item.choices, function()
+      for _, c in ipairs(item.choices) do if c.value == ns.OPT[item.key] then return c end end
+      return item.choices[1]
+    end, function(c)
+      ns.OPT[item.key] = c.value
+      onChange()
+    end)
+    dd:SetPoint("LEFT", row, "LEFT", 250, 0)
+    function row:Refresh() dd:Refresh() end
+    function row:Enable() dd:Enable() end
+    function row:Disable() dd:Disable() end
+    row.height = 28
+  elseif item.button then
+    row = ns.UI.Button(content, item.button, 160, 22)
+    row:SetScript("OnClick", item.onClick)
+    row.label = row:GetFontString()
+    function row:Refresh() end
+    row.height = 26
+  else
+    row = ns.UI.Check(content, item.label, function(self)
+      ns.OPT[item.key] = self:GetChecked() and true or false
+      onChange()
+    end)
+    function row:Refresh() self:SetChecked(ns.OPT[item.key]) end
+    row.toggle = true
+    row.height = 24
+  end
+  row.item = item
+  row.indent = item.indent or (PARENT[item.key] and 1 or 0)
+  return row
 end
 
 local function BuildSettings()
@@ -219,9 +276,9 @@ local function BuildSettings()
   panel.boxes = {}
   local function Refresh()
     for key, cb in pairs(panel.boxes) do
-      cb:SetChecked(ns.OPT[key])
+      cb:Refresh()
       local parent = PARENT[key]
-      local enabled = parent == nil or On(parent)
+      local enabled = (parent == nil or On(parent)) and (not cb.item.enabledIf or cb.item.enabledIf())
       if enabled then cb:Enable() else cb:Disable() end
       cb.label:SetTextColor(enabled and 1 or 0.5, enabled and 1 or 0.5, enabled and 1 or 0.5)
     end
@@ -250,13 +307,10 @@ local function BuildSettings()
     headers[#headers + 1] = hb
 
     for _, item in ipairs(section.items) do
-      local indent = item.indent or (PARENT[item.key] and 1 or 0)
-      local cb = ns.UI.Check(content, item.label, function(self)
-        ns.OPT[item.key] = self:GetChecked() and true or false
+      local cb = MakeRow(content, item, function()
         if item.key == "minimap" and ns.UpdateMinimapButton then ns.UpdateMinimapButton() end
         Refresh()
       end)
-      cb.indent = indent
       panel.boxes[item.key] = cb
       hb.boxes[#hb.boxes + 1] = { key = item.key, cb = cb }
     end
@@ -285,16 +339,21 @@ local function BuildSettings()
       hb:ClearAllPoints()
       hb:SetPoint("TOPLEFT", 4, y)
       hb:SetOpen(open)
-      local on = 0
-      for _, b in ipairs(hb.boxes) do if ns.OPT[b.key] then on = on + 1 end end
-      hb.count:SetText(on .. " of " .. #hb.boxes .. " on")
+      local on, switches = 0, 0
+      for _, b in ipairs(hb.boxes) do
+        if b.cb.toggle then
+          switches = switches + 1
+          if ns.OPT[b.key] then on = on + 1 end
+        end
+      end
+      hb.count:SetText(on .. " of " .. switches .. " on")
       y = y - 22
       for _, b in ipairs(hb.boxes) do
         if open then
           b.cb:ClearAllPoints()
           b.cb:SetPoint("TOPLEFT", 24 + b.cb.indent * 20, y)
           b.cb:Show()
-          y = y - 24
+          y = y - b.cb.height
         else
           b.cb:Hide()
         end

@@ -33,6 +33,7 @@ local DEFAULTS = {
   whoCard       = true,  -- [who] opens the player card
   hideWhoLines  = true,  -- hide raw /who lines for lookups the addon makes
   printLookups  = true,  -- print "Name is Lvl 24 ..." when a lookup finishes
+  cardOnWhisper = false, -- open the player card when someone whispers you
   -- class icons
   classIcons    = true,  -- master switch
   iconsWhispers = true,
@@ -53,7 +54,8 @@ local DEFAULTS = {
   minimap       = true,
   -- whisper window
   whisperWindow   = true,  -- keep whispers in the WhoAreYouPeople window
-  whisperAutoOpen = false, -- open the window when someone whispers you
+  whisperNotify   = "none", -- on a new whisper: "none", "window" (open it) or "toast"
+  toastDuration   = 8,      -- seconds a toast stays; 0 = until clicked
   whisperHideChat = false, -- take whispers out of the normal chat window
   -- look (needs a UI reload to change)
   uiStyle         = "forever",
@@ -65,7 +67,8 @@ local PARENT = {
   iconsGroup = "classIcons", iconsChannels = "classIcons",
   roleIconsParty = "roleIcons", roleIconsRaid = "roleIcons",
   spamLevel = "spamFlag", spamWords = "spamFlag", spamHide = "spamFlag",
-  whisperAutoOpen = "whisperWindow", whisperHideChat = "whisperWindow",
+  whisperNotify = "whisperWindow", toastDuration = "whisperWindow", moveToast = "whisperWindow",
+  whisperHideChat = "whisperWindow",
 }
 -- a setting counts only if it and everything above it is on
 local function On(key)

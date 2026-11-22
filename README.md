@@ -84,12 +84,14 @@ The Whispers window keeps every whisper conversation in one window, saved betwee
 - **Reply box:** type at the bottom and press Enter to whisper back. Replies to Battle.net friends go out as Battle.net whispers.
 - **Spam:** whispers flagged as spam are left out of the window.
 
-Three switches in the *Whisper window* settings section control it:
+The *Whisper window* settings section controls it:
 
-| Switch | Default | What it does |
+| Setting | Default | What it does |
 |---|---|---|
 | Keep whispers in the Whispers window | On | Main switch. Off = no window and no saved history. |
-| Open the window when someone whispers you | Off | Pops the window open on a new whisper. |
+| When someone whispers you | Do nothing | **Do nothing**, **Open the Whispers window**, or **Show a toast**: a small notice with their name and message. Click the toast to open the Whispers window on that conversation, right-click to dismiss it. A newer whisper replaces it and shows *+1 more*. Nothing pops up while the Whispers window is already open. |
+| Toast stays for | 8 seconds | 4, 8 or 15 seconds, or until clicked. Hovering keeps it up. |
+| Move the toast | | Shows a blue box you drag to where toasts appear. It also shows in the game's Edit Mode, and `/wi toast` does the same. |
 | Take whispers out of the normal chat window | Off | Whispers, yours and theirs, only appear in the Whispers window. |
 
 Battle.net conversations are saved by BattleTag, so they stay together between sessions.
@@ -107,12 +109,12 @@ Every feature has its own on/off switch. The settings have their own window, dra
 | Section | Switches |
 |---|---|
 | Whisper tag | Tag on/off · Level · Colour level by difficulty · Class · Guild · `[who]` link · `[armory]` link · Show links as icons · Tag Battle.net whispers |
-| Lookups | Automatic lookup on your next click · `[who]` opens the player card · Print a line when a lookup finishes · Hide raw /who lines |
+| Lookups | Automatic lookup on your next click · `[who]` opens the player card · Print a line when a lookup finishes · Hide raw /who lines · Open the player card when someone whispers you |
 | Class icons | Icons on/off · Whispers · Say and yell · Guild and officer · Party, raid and instance · General, Trade and other channels |
 | Role icons | Icons on/off · Party chat · Raid chat |
 | Spam | Flag on/off · Strangers at level 1–5 · Links, prices and gold-selling words · Hide instead of grey out |
 | Other | Minimap button |
-| Whisper window | Window on/off · Open on a new whisper · Take whispers out of normal chat |
+| Whisper window | Window on/off · When someone whispers you (nothing, open the window, toast) · Toast stays for · Move the toast · Take whispers out of normal chat |
 
 ## Chat icons
 
@@ -166,6 +168,7 @@ All commands start with `/wi` (or `/wayp`, `/whoareyoupeople`). Names can be typ
 | `/wi minimap` | Shows or hides the minimap button. |
 | `/wi reset` | Forgets every saved player. |
 | `/wi whispers` | Opens or closes the Whispers window (short: `/wi w`). |
+| `/wi toast` | Shows or hides the box that places whisper toasts. |
 
 ## Limits
 
@@ -208,6 +211,7 @@ The addon is split into one Lua file per feature. The `.toc` lists them in load 
 | `Settings.lua` | the settings window, its preview, and the button in the game's options |
 | `Minimap.lua` | the minimap button |
 | `Whispers.lua` | the Whispers window and saved conversations |
+| `Toast.lua` | the whisper toast and its anchor (Edit Mode or `/wi toast`) |
 | `Events.lua` | events, loading saved data, `/wi` commands (loads last) |
 
 - `make test` checks the syntax of every file, then loads the addon in a fake WoW environment (`tests/smoke.lua`) and fires every handler, once per UI style.
@@ -219,6 +223,7 @@ Newest changes first.
 
 | Version | Date | Changes |
 |---|---|---|
+| 3.3.0 | Nov 22, 2026 | New whispers can show a toast instead: click it to open the Whispers window, with an adjustable duration and a position you set in Edit Mode or with `/wi toast`. The "Open the window when someone whispers you" switch is now the *When someone whispers you* choice (your setting is kept). New switch: open the player card when someone whispers you. |
 | 3.2.1 | Nov 21, 2026 | Esc no longer closes the Whispers window; it still closes the settings, the player card and the Armory box. |
 | 3.2.0 | Nov 21, 2026 | The Whispers window can be resized from its bottom-right corner and remembers its size. The conversation list shows as many people as fit. |
 | 3.1.0 | Nov 21, 2026 | Settings open in their own window, drawn in your UI style, and no longer close the Whispers window; the game's AddOns options page has an **Open settings** button. Battle.net whispers are kept in the Whispers window, and replies there go out as Battle.net whispers. Minimap button: left-click now opens the Whispers window, shift-click the settings. The code is split into one file per feature. |
